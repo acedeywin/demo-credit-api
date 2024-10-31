@@ -1,0 +1,5 @@
+# Add node module
+/node_modules
+
+# Add .env file
+.env
