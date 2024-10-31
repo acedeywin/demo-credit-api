@@ -1,4 +1,5 @@
 import type { Knex } from "knex";
+import { VerificationStatus } from "../../../types/user";
 
 
 export async function up(knex: Knex): Promise<void> {
@@ -10,6 +11,7 @@ export async function up(knex: Knex): Promise<void> {
         table.string('email').unique().notNullable();
         table.string('phone_number').unique().notNullable();
         table.boolean('email_verified').defaultTo(false)
+        table.enum('bvn_verified', [VerificationStatus]).defaultTo(VerificationStatus.UNVERIFIED)
         table.timestamps(true, true);
       });
 }
