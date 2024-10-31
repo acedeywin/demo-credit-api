@@ -7,7 +7,8 @@
     "compile": "npx tsc",
     "dev": "nodemon --watch src --exec ts-node src/index.ts",
     "start": "npx ts-node src/index.ts",
-    "migration": "npx knex migrate:latest --knexfile src/config/knexfile.js"
+    "migration:up": "npx knex migrate:latest --knexfile src/config/knexfile.ts",
+    "migration:down": "npx knex migrate:rollback --all --knexfile src/config/knexfile.ts"
   },
   "keywords": [],
   "author": "",

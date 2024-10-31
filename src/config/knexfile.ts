@@ -1,7 +1,12 @@
 import { Knex } from 'knex';
 import dotenv from 'dotenv';
 
-dotenv.config();
+/** 
+ * Since knexfile is not on the same directory level with the .env file
+ * Reference: https://stackoverflow.com/questions/49905967/knexfile-not-reading-environment-variables
+*/
+
+dotenv.config({ path: '../../.env' })
 
 const config: { [key: string]: Knex.Config } = {
   development: {
@@ -11,12 +16,13 @@ const config: { [key: string]: Knex.Config } = {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      port: Number(process.env.DB_PORT)
     },
     migrations: {
-      directory: '../db/migrations',
+      directory:  'db/migrations',
     },
     seeds: {
-      directory: '../db/seeds',
+      directory: 'db/seeds',
     },
   },
 };
