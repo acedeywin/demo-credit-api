@@ -1,4 +1,7 @@
-import { ForbiddenError, InternalError } from '../utils/errors'
+import { ForbiddenError, InternalError } from '../utils/error.handler'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 class AdjutorService {
     static async fetchData(path: string) {
@@ -8,38 +11,39 @@ class AdjutorService {
             const myHeaders = new Headers()
             myHeaders.append(
                 'Authorization',
-                String(process.env.ADJUTOR_API_KEY)
+                `Bearer ${process.env.ADJUTOR_API_KEY}`
             )
 
             const requestOptions = {
                 method: 'GET',
                 headers: myHeaders,
-                redirect: 'follow' as RequestRedirect,
+                // redirect: 'follow' as RequestRedirect,
             }
 
             const response = await fetch(`${baseUrl}/${path}`, requestOptions)
 
             return response
         } catch (error) {
-            console.error(error)
-            throw new Error('Something went wrong')
+            console.error('Error fetching data:', error)
+            throw new InternalError('Data could not be fetched.')
         }
     }
 
     static async karmaCheck(nin: string) {
         try {
-            const path = `/karma/${nin}`
+            const path = `karma/${nin}`
             const response = await this.fetchData(path)
 
             return response.status === 200
         } catch (error) {
-            throw new InternalError(`Something went wrong: ${error}`)
+            console.error('Karma check failed:', error)
+            throw new InternalError('Karma check could not be completed.')
         }
     }
 
     static async verifyNIN(nin: string) {
         try {
-            const path = `/karma/${nin}`
+            const path = `nin/${nin}`
             const response = await this.fetchData(path)
 
             if (response.status !== 200) {
@@ -54,7 +58,8 @@ class AdjutorService {
                 mobile: result.data.mobile,
             }
         } catch (error) {
-            throw new InternalError(`Something went wrong: ${error}`)
+            console.error('NIN verification failed:', error)
+            throw new InternalError('NIN verification could not be completed.')
         }
     }
 }

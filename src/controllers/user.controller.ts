@@ -1,19 +1,46 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 
 import UserService from '../services/user.service'
+import { omitValue } from '../utils/helpers'
+import { UserDto } from '../types/user.types'
 
 class UserController {
-    public static async createUser(req: Request, res: Response) {
+    static async createUser(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
         try {
-            const user = await UserService.createUser(req.body)
+            const values = omitValue(req.body, ['confirm_password', 'nin'])
+            await UserService.createUser(values as UserDto)
 
-            return res
-                .status(201)
-                .json({ message: 'User created successfully', user })
+            res.status(201).json({
+                status: 'success',
+                message: 'User account created successfully',
+            })
+            return
         } catch (error) {
-            return res
-                .status(500)
-                .json({ message: 'Error creating user', error })
+            next(error)
+        }
+    }
+
+    static async getUserById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { user_id, account_id } = req.query
+
+            const user = await UserService.getUserById(
+                user_id as string,
+                account_id as string
+            )
+
+            res.status(201).json({
+                status: 'success',
+                message: 'User account fetched successfully',
+                user,
+            })
+            return
+        } catch (error) {
+            next(error)
         }
     }
 }

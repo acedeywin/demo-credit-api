@@ -2,6 +2,7 @@ import { body, validationResult } from 'express-validator'
 import { Request, Response, NextFunction } from 'express'
 import { compareUserInfo, verifyAge } from '../utils/helpers'
 import AdjutorService from '../services/adjutor.service'
+import UserModel from '../models/user.model'
 
 export const validateUserRegistration = [
     body('first_name')
@@ -37,18 +38,36 @@ export const validateUserRegistration = [
         .notEmpty()
         .isLength({ min: 11, max: 11 })
         .withMessage('NIN should have 11 character.'),
+]
 
-    async (req: Request, res: Response, next: NextFunction) => {
+export const handleUserRegistrationValidationErrors = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() })
+            res.status(400).json({ errors: errors.array() })
+            return
         }
 
-        const { dob, nin, first_name, last_name, phone_number } = req.body
+        const { dob, nin, first_name, last_name, phone_number, email } =
+            req.body
 
         const isLegalAge = await verifyAge(dob)
         const validUser = await AdjutorService.verifyNIN(nin)
         const validKarma = await AdjutorService.karmaCheck(nin)
+
+        const userExist = await UserModel.findUserByEmail(email)
+
+        if (userExist) {
+            res.status(403).json({
+                status: 'success',
+                message: 'You already have an account.',
+            })
+            return
+        }
 
         const validateFirstName = await compareUserInfo(
             first_name,
@@ -64,21 +83,64 @@ export const validateUserRegistration = [
         )
 
         if (!isLegalAge) {
-            return res
-                .status(403)
-                .json({ message: 'Your age is below the legal age of 18.' })
+            res.status(403).json({
+                status: 'success',
+                message: 'Your age is below the legal age of 18.',
+            })
+            return
         }
 
-        if (!validateFirstName && !validateLastName && !validatePhoneNumber) {
-            return res.status(400).json({ message: 'NIN verification failed.' })
+        if (!validateFirstName || !validateLastName || !validatePhoneNumber) {
+            res.status(400).json({
+                status: 'success',
+                message:
+                    'NIN verification failed. Mismatched information. Account cannot be created.',
+            })
+            return
         }
 
         if (validKarma) {
-            return res
-                .status(403)
-                .json({ message: 'You are barred from using this service.' })
+            res.status(403).json({
+                status: 'success',
+                message: 'You are barred from using this service.',
+            })
+            return
         }
 
         next()
-    },
-]
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const validateFetchingUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { user_id: id } = req.query
+
+        if (!id) {
+            res.status(404).json({
+                status: 'success',
+                message: 'Missing query parameter',
+            })
+            return
+        }
+
+        const user = await UserModel.findUserById(id as string)
+
+        if (!user) {
+            res.status(404).json({
+                status: 'success',
+                message: 'User not found',
+            })
+            return
+        }
+
+        next()
+    } catch (error) {
+        next(error)
+    }
+}

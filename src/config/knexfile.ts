@@ -1,11 +1,12 @@
 import { Knex } from 'knex'
 import dotenv from 'dotenv'
 
-/**
- * Since knexfile is not on the same directory level with the .env file
+dotenv.config()
+
+/** This is neede to unr the migrations
+ * since knexfile is not on the same directory level with the .env file
  * Reference: https://stackoverflow.com/questions/49905967/knexfile-not-reading-environment-variables
  */
-
 dotenv.config({ path: '../../.env' })
 
 const config: { [key: string]: Knex.Config } = {

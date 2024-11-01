@@ -2,9 +2,18 @@ import db from '../config/db/connection'
 import { UserDto } from '../types/user.types'
 
 class UserModel {
-    public static async createUser(payload: UserDto): Promise<UserDto> {
-        const [user] = await db('users').insert(payload).returning('*')
-        return user
+    public static async createUser(payload: UserDto) {
+        // Insert the payload and retrieve the new user's ID
+        const [userId] = await db('users').insert(payload)
+
+        return userId
+    }
+
+    public static async findUserByEmail(
+        email: string
+    ): Promise<UserDto | null> {
+        const user = await db('users').where({ email }).first()
+        return user || null
     }
 
     public static async findUserById(id: string): Promise<UserDto | null> {

@@ -1,3 +1,5 @@
+import { AccountDto } from './account.types'
+
 export enum VerificationStatus {
     UNVERIFIED = 'unverified',
     VERIFIED = 'verified',
@@ -14,5 +16,10 @@ export interface UserDto {
     dob: Date
     nin?: number
     email_verified?: boolean
-    nin_verified?: VerificationStatus
+    nin_verified: VerificationStatus
+}
+
+export interface UserAccountResponse {
+    user: UserDto
+    account: AccountDto
 }

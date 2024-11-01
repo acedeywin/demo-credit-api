@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class ApplicationError extends Error {
     public code: number
     constructor(code: number, message: string, ...args: any) {
@@ -14,8 +15,8 @@ export class BadRequestError extends ApplicationError {
 }
 
 export class UnauthorizedError extends ApplicationError {
-    constructor(message: string) {
-        super(401, message)
+    constructor(message: string, ...args: any) {
+        super(401, message, args)
     }
 }
 
@@ -26,19 +27,13 @@ export class ForbiddenError extends ApplicationError {
 }
 
 export class NotFoundError extends ApplicationError {
-    constructor(message: string) {
-        super(404, message, arguments)
-    }
-}
-
-export class MissingFieldError extends BadRequestError {
-    constructor(fieldName: string, ...args: any) {
-        super(`${fieldName} is required`, args)
+    constructor(message: string, ...args: any) {
+        super(404, message, args)
     }
 }
 
 export class InternalError extends ApplicationError {
-    constructor(message: string) {
-        super(500, message, arguments)
+    constructor(message: string, ...args: any) {
+        super(500, message, args)
     }
 }
