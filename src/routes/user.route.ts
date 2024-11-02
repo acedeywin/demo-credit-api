@@ -7,8 +7,8 @@ import {
     handleUserVerificationValidationErrors,
     validateUserVerification,
     validateFetchingUser,
-} from '../middleware/user.middleware'
-import { authenticateJWT } from '../middleware/auth.middleware'
+} from '../middlewares/user.middleware'
+import { authenticateJWT } from '../middlewares/auth.middleware'
 
 const userRoutes = Router()
 
@@ -26,7 +26,11 @@ userRoutes.put(
 
 userRoutes.get(
     '/',
-    [authenticateJWT, ...validateFetchingUser, handleFetchingUserValidationErrors],
+    [
+        authenticateJWT,
+        ...validateFetchingUser,
+        handleFetchingUserValidationErrors,
+    ],
     UserController.getUserById
 )
 

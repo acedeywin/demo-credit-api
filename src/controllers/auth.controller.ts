@@ -23,7 +23,7 @@ class AuthController {
 
     static logout(req: Request, res: Response) {
         // On the client side, logging out involves deleting the JWT.
-        res.status(200).json({ message: 'Logged out successfully' });
+        res.status(200).json({ message: 'Logged out successfully' })
     }
 }
 

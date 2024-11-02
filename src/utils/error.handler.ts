@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class ApplicationError extends Error {
-    public code: number
-    constructor(code: number, message: string, ...args: any) {
+    public statusCode: number
+    constructor(statusCode: number, message: string, ...args: any) {
         super(...args)
-        this.code = code
+        this.statusCode = statusCode
         this.message = message
     }
 }

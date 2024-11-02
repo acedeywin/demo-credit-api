@@ -3,7 +3,7 @@ import AuthController from '../controllers/auth.controller'
 import {
     handleLoginValidatationErrors,
     validateLogin,
-} from '../middleware/auth.middleware'
+} from '../middlewares/auth.middleware'
 
 const authRoutes = express.Router()
 
@@ -13,6 +13,6 @@ authRoutes.post(
     AuthController.login
 )
 
-authRoutes.post('/logout', AuthController.logout);
+authRoutes.post('/logout', AuthController.logout)
 
 export default authRoutes

@@ -1,17 +1,17 @@
 import { body, validationResult } from 'express-validator'
 import { Request, Response, NextFunction } from 'express'
+import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+
 import UserModel from '../models/user.model'
 import EncryptionService from '../services/encryption.service'
-import AuthService from '../services/auth.service'
-
-interface CustomRequest extends Request {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    user?: any
-}
+import { CustomRequest } from '../types/auth.types'
 
 export const validateLogin = [
     body('email').isEmail().withMessage('A valid email is required.'),
-    body('password').isString().notEmpty().withMessage('Password is required'),
+    body('password')
+        .isString()
+        .notEmpty()
+        .withMessage('A valid password is required'),
 ]
 
 export const handleLoginValidatationErrors = async (
@@ -65,16 +65,23 @@ export const authenticateJWT = (
         }
 
         const token = authHeader.split(' ')[1]
-        const decoded = AuthService.verifyToken(token)
-
-        if (!token) {
-            res.status(403).json({ message: 'Invalid token' })
-            return
-        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
 
         req.user = decoded
         next()
     } catch (error) {
-        next(error)
+        if (error instanceof TokenExpiredError) {
+            res.status(401).json({
+                message: 'Token expired. Please log in again.',
+            })
+            return
+        } else if (error instanceof JsonWebTokenError) {
+            res.status(403).json({ message: 'Invalid token' })
+            return
+        } else {
+            console.error('Unexpected error:', error)
+            res.status(500).json({ message: 'Internal server error' })
+            return
+        }
     }
 }

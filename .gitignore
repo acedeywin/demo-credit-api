@@ -1,5 +1,6 @@
 # Add node module
 /node_modules
+/dist
 
 # Add .env file
 .env
