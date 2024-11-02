@@ -5,17 +5,20 @@ import {
     validateUserRegistration,
     handleUserRegistrationValidationErrors,
     validateFetchingUser,
+    validateUserVerification,
 } from '../../middleware/user.middleware'
 import { verifyAge, compareUserInfo } from '../../utils/helpers'
 import AdjutorService from '../../services/adjutor.service'
 import UserModel from '../../models/user.model'
 import AccountModel from '../../models/account.model'
 import redisClient from '../../config/redis'
+import CacheService from '../../services/cache.service'
 
 jest.mock('../../utils/helpers')
 jest.mock('../../services/adjutor.service')
 jest.mock('../../models/user.model')
 jest.mock('../../models/account.model')
+jest.mock('../../services/cache.service');
 
 // Mock ioredis directly
 jest.mock('ioredis', () => {
@@ -249,4 +252,85 @@ describe('User Registration Validation Middleware', () => {
             })
         })
     })
+
+    describe('validateUserVerification', () => {
+        let req: Partial<Request>;
+        let res: Partial<Response>;
+        let next: NextFunction;
+    
+        const email = 'user@example.com';
+        const code = '123456';
+        const user = { id: '1', email, email_verified: false };
+    
+        beforeEach(() => {
+            req = { body: { email, code } };
+            res = {
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn(),
+            };
+            next = jest.fn();
+            jest.clearAllMocks();
+        });
+    
+        it('should return 404 if cache is not found for the email', async () => {
+            (CacheService.getCache as jest.Mock).mockResolvedValue(null);
+    
+            await validateUserVerification(req as Request, res as Response, next);
+    
+            expect(CacheService.getCache).toHaveBeenCalledWith(email);
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Invalid Request',
+                status: 'success',
+            });
+        });
+    
+        it('should return 404 if code does not match the cached code', async () => {
+            (CacheService.getCache as jest.Mock).mockResolvedValue('654321');
+    
+            await validateUserVerification(req as Request, res as Response, next);
+    
+            expect(CacheService.getCache).toHaveBeenCalledWith(email);
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Invalid code supplied',
+                status: 'success',
+            });
+        });
+    
+        it('should return 404 if user is not found for the email', async () => {
+            (CacheService.getCache as jest.Mock).mockResolvedValue(code);
+            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(null);
+    
+            await validateUserVerification(req as Request, res as Response, next);
+    
+            expect(CacheService.getCache).toHaveBeenCalledWith(email);
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ email });
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Invalid email supplied',
+                status: 'success',
+            });
+        });
+    
+        it('should call next if verification is successful', async () => {
+            (CacheService.getCache as jest.Mock).mockResolvedValue(code);
+            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(user);
+    
+            await validateUserVerification(req as Request, res as Response, next);
+    
+            expect(CacheService.getCache).toHaveBeenCalledWith(email);
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ email });
+            expect(next).toHaveBeenCalled();
+        });
+    
+        it('should call next with an error if an exception is thrown', async () => {
+            const error = new Error('Database error');
+            (CacheService.getCache as jest.Mock).mockRejectedValue(error);
+    
+            await validateUserVerification(req as Request, res as Response, next);
+    
+            expect(next).toHaveBeenCalledWith(error);
+        });
+    });
 })
