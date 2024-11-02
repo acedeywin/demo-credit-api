@@ -204,7 +204,7 @@ export const handleUserVerificationValidationErrors = async (
 
         if (cache !== code) {
             res.status(404).json({
-                message: 'Invalid code supplied',
+                message: 'Invalid Request',
                 status: 'success',
             })
             return
@@ -214,7 +214,7 @@ export const handleUserVerificationValidationErrors = async (
 
         if (!user) {
             res.status(404).json({
-                message: 'Invalid email supplied',
+                message: 'Invalid Request',
                 status: 'success',
             })
             return

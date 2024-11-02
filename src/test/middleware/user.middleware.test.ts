@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from 'express'
 import { validationResult } from 'express-validator'
 
@@ -6,6 +7,7 @@ import {
     handleUserRegistrationValidationErrors,
     handleFetchingUserValidationErrors,
     handleUserVerificationValidationErrors,
+    validateFetchingUser,
 } from '../../middleware/user.middleware'
 import { verifyAge, compareUserInfo } from '../../utils/helpers'
 import AdjutorService from '../../services/adjutor.service'
@@ -52,6 +54,7 @@ describe('User Registration Validation Middleware', () => {
                 nin: '12345678901',
                 dob: '2000-01-01',
             },
+            query: { user_id: '123', account_id: '456' }
         }
         res = {
             status: jest.fn().mockReturnThis() as unknown as Response['status'],
@@ -75,7 +78,7 @@ describe('User Registration Validation Middleware', () => {
         jest.clearAllMocks()
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const runMiddlewares = async (middlewares: any[]) => {
         for (const middleware of middlewares) {
             await middleware(req as Request, res as Response, next)
@@ -222,40 +225,95 @@ describe('User Registration Validation Middleware', () => {
             message: 'You are barred from using this service.',
         })
     })
+      
+     // Helper function to run validation middlewares and handle errors
+    const runValidationWithErrors = async (middlewares: any[], req: Partial<Request>, res: Partial<Response>, next: NextFunction) => {
+        for (const middleware of middlewares) {
+            await middleware(req as Request, res as Response, next);
+        }
+        const errors = validationResult(req as Request);
+        if (!errors.isEmpty()) {
+            res.status!(400).json({ errors: errors.array() });
+        }
+    };
+
+    describe('validateFetchingUser', () => {
+        it('should return 400 if user_id is missing', async () => {
+            req.query = { account_id: '456' };
+
+            await runValidationWithErrors(validateFetchingUser, req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                errors: expect.arrayContaining([
+                    expect.objectContaining({ msg: 'user_id query parameter is required.' }),
+                ]),
+            });
+        });
+
+        it('should return 400 if account_id is missing', async () => {
+            req.query = { user_id: '123' };
+
+            await runValidationWithErrors(validateFetchingUser, req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                errors: expect.arrayContaining([
+                    expect.objectContaining({ msg: 'account_id query parameter is required.' }),
+                ]),
+            });
+        });
+    });
 
     describe('handleFetchingUserValidationErrors', () => {
-        it('should proceed if user and account are found', async () => {
-            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
-                id: '1',
-            })
-            ;(AccountModel.getAccountById as jest.Mock).mockResolvedValue({
-                id: '2',
-            })
+        it('should return 404 if user is not found', async () => {
+            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(null);
 
-            const middlewares = [
-                ...validateUserRegistration,
-                handleUserRegistrationValidationErrors,
-            ]
-            await runMiddlewares(middlewares)
+            await handleFetchingUserValidationErrors(req as Request, res as Response, next);
 
-            expect(next).toHaveBeenCalled()
-        })
-
-        it('should return 404 if user is missing', async () => {
-            req.query = {} // Set empty query object
-
-            await handleFetchingUserValidationErrors(
-                req as Request,
-                res as Response,
-                next
-            )
-            expect(res.status).toHaveBeenCalledWith(404)
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ id: '123' });
+            expect(res.status).toHaveBeenCalledWith(404);
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
                 message: 'User not found',
-            })
-        })
-    })
+            });
+        });
+
+        it('should return 404 if account is not found', async () => {
+            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({ id: '123' });
+            (AccountModel.getAccountById as jest.Mock).mockResolvedValue(null);
+
+            await handleFetchingUserValidationErrors(req as Request, res as Response, next);
+
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ id: '123' });
+            expect(AccountModel.getAccountById).toHaveBeenCalledWith('456', '123');
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                status: 'success',
+                message: 'Account not found',
+            });
+        });
+
+        it('should call next if user and account are found', async () => {
+            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({ id: '123' });
+            (AccountModel.getAccountById as jest.Mock).mockResolvedValue({ id: '456' });
+
+            await handleFetchingUserValidationErrors(req as Request, res as Response, next);
+
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ id: '123' });
+            expect(AccountModel.getAccountById).toHaveBeenCalledWith('456', '123');
+            expect(next).toHaveBeenCalled();
+        });
+
+        it('should call next with an error if an exception is thrown', async () => {
+            const error = new Error('Database error');
+            (UserModel.getUserByIdentifier as jest.Mock).mockRejectedValue(error);
+
+            await handleFetchingUserValidationErrors(req as Request, res as Response, next);
+
+            expect(next).toHaveBeenCalledWith(error);
+        });
+    });
 
     describe('handleUserVerificationValidationErrors', () => {
         let req: Partial<Request>
@@ -305,7 +363,7 @@ describe('User Registration Validation Middleware', () => {
             expect(CacheService.getCache).toHaveBeenCalledWith(email)
             expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
-                message: 'Invalid code supplied',
+                message: 'Invalid Request',
                 status: 'success',
             })
         })
@@ -328,7 +386,7 @@ describe('User Registration Validation Middleware', () => {
             })
             expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
-                message: 'Invalid email supplied',
+                message: 'Invalid Request',
                 status: 'success',
             })
         })
