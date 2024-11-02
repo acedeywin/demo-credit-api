@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import AccountModel from '../models/account.model'
 import UserModel from '../models/user.model'
-import { AccountDto } from '../types/account.types'
+import { AccountDto, AccountStatus } from '../types/account.types'
 import { UserDto, VerificationStatus } from '../types/user.types'
 import sendEmail from '../utils/email'
 import { InternalError } from '../utils/error.handler'
@@ -61,8 +61,8 @@ class UserService {
 
     static async getUserById(id: string, account_id: string) {
         try {
-            const user = await UserModel.findUserById(id)
-            const account = await AccountModel.getAccountById(
+            const user = await UserModel.getUserByIdentifier({ id })
+            const account = await AccountModel.findAccountById(
                 account_id,
                 user?.id as string
             )
@@ -73,6 +73,26 @@ class UserService {
         } catch (error) {
             console.error('Error fetching user account:', error)
             throw new InternalError('User account could not be fetched')
+        }
+    }
+
+    static async verifyUser(email: string) {
+        try {
+            const user = await UserModel.getUserByIdentifier({ email })
+
+            await UserModel.updateUserById(user?.id as string, {
+                email_verified: true,
+            })
+            await AccountModel.updateAccountByIdOrUserId(
+                { user_id: user?.id },
+                { status: AccountStatus.ACTIVE }
+            )
+
+            await CacheService.invalidateCache(email)
+
+        } catch (error) {
+            console.error('Error verifying user account:', error)
+            throw new InternalError('User account could not be verified')
         }
     }
 }

@@ -162,7 +162,9 @@ describe('User Registration Validation Middleware', () => {
     })
 
     it('should return 403 if user already exists', async () => {
-        ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({ id: '1' })
+        ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
+            id: '1',
+        })
         await handleUserRegistrationValidationErrors(
             req as Request,
             res as Response,

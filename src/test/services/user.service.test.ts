@@ -148,7 +148,9 @@ describe('UserService', () => {
                 user_id: userData.id,
             }
 
-            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(userData)
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                userData
+            )
             ;(AccountModel.findAccountById as jest.Mock).mockResolvedValue(
                 accountData
             )
@@ -162,7 +164,9 @@ describe('UserService', () => {
                 accountData.account_number
             )
 
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({id: userData.id})
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
+                id: userData.id,
+            })
             expect(AccountModel.findAccountById).toHaveBeenCalledWith(
                 accountData.account_number,
                 userData.id

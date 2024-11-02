@@ -14,7 +14,7 @@ class CacheService {
 
     static async getCache(key: string): Promise<string | null> {
         const cachedData = await redisClient.get(`key:${key}`)
-        return cachedData ? cachedData : null
+        return cachedData ? JSON.parse(cachedData) : null
     }
 
     static async invalidateCache(key: string): Promise<void> {

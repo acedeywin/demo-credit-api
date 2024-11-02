@@ -3,14 +3,6 @@ import * as otpGenerator from 'otp-generator'
 import db from '../config/db/connection'
 import { InternalError } from './error.handler'
 
-export function removePrefix(phoneNumber: string) {
-    // Ensure the phone number is a string
-    phoneNumber = phoneNumber.toString()
-
-    // Remove any existing '+234' or '234' prefix and add 0
-    return (phoneNumber = phoneNumber.replace(/^(\+234|234)/, '0'))
-}
-
 export const verifyAge = async (dob: Date) => {
     const enteredDate = new Date(dob)
     const today = new Date()

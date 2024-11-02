@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express'
 import { compareUserInfo, verifyAge } from '../utils/helpers'
 import AdjutorService from '../services/adjutor.service'
 import UserModel from '../models/user.model'
+import AccountModel from '../models/account.model'
+import CacheService from '../services/cache.service'
 
 export const validateUserRegistration = [
     body('first_name')
@@ -59,7 +61,7 @@ export const handleUserRegistrationValidationErrors = async (
         const validUser = await AdjutorService.verifyNIN(nin)
         const validKarma = await AdjutorService.karmaCheck(nin)
 
-        const userExist = await UserModel.findUserByEmail(email)
+        const userExist = await UserModel.getUserByIdentifier({ email })
 
         if (userExist) {
             res.status(403).json({
@@ -119,9 +121,9 @@ export const validateFetchingUser = async (
     next: NextFunction
 ): Promise<void> => {
     try {
-        const { user_id: id } = req.query
+        const { user_id, account_id } = req.query
 
-        if (!id) {
+        if (!user_id) {
             res.status(404).json({
                 status: 'success',
                 message: 'Missing query parameter',
@@ -129,7 +131,9 @@ export const validateFetchingUser = async (
             return
         }
 
-        const user = await UserModel.findUserById(id as string)
+        const user = await UserModel.getUserByIdentifier({
+            id: user_id as string,
+        })
 
         if (!user) {
             res.status(404).json({
@@ -138,7 +142,60 @@ export const validateFetchingUser = async (
             })
             return
         }
+        const account = await AccountModel.findAccountById(
+            account_id as string,
+            user_id as string
+        )
 
+        if (!account) {
+            res.status(404).json({
+                status: 'success',
+                message: 'Account not found',
+            })
+            return
+        }
+
+        next()
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const validateUserVerification = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { email, code } = req.body
+
+        const cache = await CacheService.getCache(email)
+
+        if (!cache) {
+            res.status(404).json({
+                message: 'Invalid Request',
+                status: 'success',
+            })
+            return
+        }
+
+        if (cache !== code) {
+            res.status(404).json({
+                message: 'Invalid code supplied',
+                status: 'success',
+            })
+            return
+        }
+
+        const user = await UserModel.getUserByIdentifier({ email })
+
+        if (!user) {
+            res.status(404).json({
+                message: 'Invalid email supplied',
+                status: 'success',
+            })
+            return
+        }
         next()
     } catch (error) {
         next(error)

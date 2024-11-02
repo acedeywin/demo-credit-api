@@ -2,17 +2,11 @@ import db from '../config/db/connection'
 import { AccountDto } from '../types/account.types'
 
 class AccountModel {
-    static async createAccount(payload: AccountDto): Promise<AccountDto> {
-        const [accountId] = await db('accounts').insert(payload)
-
-        const [account] = await db('accounts')
-            .where({ id: accountId })
-            .select('*')
-
-        return account
+    static async createAccount(payload: AccountDto) {
+        await db('accounts').insert(payload)
     }
 
-    static async getAccountById(
+    static async findAccountById(
         id: string,
         user_id: string
     ): Promise<AccountDto | null> {
@@ -29,6 +23,37 @@ class AccountModel {
             .where({ id })
             .returning('*')
         return account || null
+    }
+
+    static async updateAccountByIdOrUserId(
+        identifier: { id?: string; user_id?: string },
+        payload: Partial<AccountDto>
+    ): Promise<AccountDto | null> {
+        const { id, user_id } = identifier
+
+        const query = db('accounts')
+            .where((builder) => {
+                if (id) builder.where('id', id)
+                if (user_id) builder.where('user_id', user_id)
+            })
+            .update(payload)
+
+        // Execute update
+        const rowsAffected = await query
+        if (!rowsAffected) {
+            return null
+        }
+
+        // Retrieve the updated account row
+        const [updatedAccount] = await db('accounts')
+            .select('*')
+            .where((builder) => {
+                if (id) builder.where('id', id)
+                if (user_id) builder.where('user_id', user_id)
+            })
+            .limit(1)
+
+        return updatedAccount || null
     }
 }
 

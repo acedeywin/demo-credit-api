@@ -58,6 +58,9 @@ class AdjutorService {
                 mobile: result.data.mobile,
             }
         } catch (error) {
+            if (error instanceof ForbiddenError) {
+                throw error
+            }
             console.error('NIN verification failed:', error)
             throw new InternalError('NIN verification could not be completed.')
         }

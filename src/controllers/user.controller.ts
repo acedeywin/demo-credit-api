@@ -36,7 +36,23 @@ class UserController {
             res.status(201).json({
                 status: 'success',
                 message: 'User account fetched successfully',
-                user,
+                data: user,
+            })
+            return
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async verifyUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email } = req.body
+
+            await UserService.verifyUser(email)
+
+            res.status(201).json({
+                status: 'success',
+                message: 'User account verified successfully',
             })
             return
         } catch (error) {

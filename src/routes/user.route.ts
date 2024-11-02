@@ -4,6 +4,7 @@ import {
     handleUserRegistrationValidationErrors,
     validateFetchingUser,
     validateUserRegistration,
+    validateUserVerification,
 } from '../middleware/user.middleware'
 
 const userRoutes = Router()
@@ -12,6 +13,12 @@ userRoutes.post(
     '/register',
     [...validateUserRegistration, handleUserRegistrationValidationErrors],
     UserController.createUser
+)
+
+userRoutes.put(
+    '/verify-user',
+    validateUserVerification,
+    UserController.verifyUser
 )
 
 userRoutes.get('/', validateFetchingUser, UserController.getUserById)
