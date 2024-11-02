@@ -152,7 +152,7 @@ describe('UserService', () => {
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
                 userData
             )
-            ;(AccountModel.findAccountById as jest.Mock).mockResolvedValue(
+            ;(AccountModel.getAccountById as jest.Mock).mockResolvedValue(
                 accountData
             )
             ;(omitValue as jest.Mock).mockReturnValue({
@@ -168,7 +168,7 @@ describe('UserService', () => {
             expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
                 id: userData.id,
             })
-            expect(AccountModel.findAccountById).toHaveBeenCalledWith(
+            expect(AccountModel.getAccountById).toHaveBeenCalledWith(
                 accountData.account_number,
                 userData.id
             )
@@ -191,44 +191,58 @@ describe('UserService', () => {
     })
 
     describe('verifyUser', () => {
-        const email = 'user@example.com';
-        const userId = '123';
-        const mockUser = { id: userId, email, email_verified: false };
-      
+        const email = 'user@example.com'
+        const userId = '123'
+        const mockUser = { id: userId, email, email_verified: false }
+
         beforeEach(() => {
-          jest.clearAllMocks();
-        });
-      
+            jest.clearAllMocks()
+        })
+
         it('should successfully verify the user, update the account, and clear the cache', async () => {
-          // Mock the responses for each method
-          (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(mockUser);
-          (UserModel.updateUserById as jest.Mock).mockResolvedValue(true);
-          (AccountModel.updateAccountByIdOrUserId as jest.Mock).mockResolvedValue(true);
-          (CacheService.invalidateCache as jest.Mock).mockResolvedValue(true);
-      
-          // Call the function
-          await UserService.verifyUser(email);
-      
-          // Verify each method was called with the correct parameters
-          expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ email });
-          expect(UserModel.updateUserById).toHaveBeenCalledWith(userId, { email_verified: true });
-          expect(AccountModel.updateAccountByIdOrUserId).toHaveBeenCalledWith(
-            { user_id: userId },
-            { status: AccountStatus.ACTIVE }
-          );
-          expect(CacheService.invalidateCache).toHaveBeenCalledWith(email);
-        });
-      
+            // Mock the responses for each method
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                mockUser
+            )
+            ;(UserModel.updateUserById as jest.Mock).mockResolvedValue(true)
+            ;(
+                AccountModel.updateAccountByIdOrUserId as jest.Mock
+            ).mockResolvedValue(true)
+            ;(CacheService.invalidateCache as jest.Mock).mockResolvedValue(true)
+
+            // Call the function
+            await UserService.verifyUser(email)
+
+            // Verify each method was called with the correct parameters
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
+                email,
+            })
+            expect(UserModel.updateUserById).toHaveBeenCalledWith(userId, {
+                email_verified: true,
+            })
+            expect(AccountModel.updateAccountByIdOrUserId).toHaveBeenCalledWith(
+                { user_id: userId },
+                { status: AccountStatus.ACTIVE }
+            )
+            expect(CacheService.invalidateCache).toHaveBeenCalledWith(email)
+        })
+
         it('should throw an InternalError if any part of the process fails', async () => {
-          // Mock `getUserByIdentifier` to throw an error
-          (UserModel.getUserByIdentifier as jest.Mock).mockRejectedValue(new Error('Database error'));
-      
-          await expect(UserService.verifyUser(email)).rejects.toThrow(InternalError);
-      
-          // Ensure no further calls are made if an error occurs
-          expect(UserModel.updateUserById).not.toHaveBeenCalled();
-          expect(AccountModel.updateAccountByIdOrUserId).not.toHaveBeenCalled();
-          expect(CacheService.invalidateCache).not.toHaveBeenCalled();
-        });
-      });
+            // Mock `getUserByIdentifier` to throw an error
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockRejectedValue(
+                new Error('Database error')
+            )
+
+            await expect(UserService.verifyUser(email)).rejects.toThrow(
+                InternalError
+            )
+
+            // Ensure no further calls are made if an error occurs
+            expect(UserModel.updateUserById).not.toHaveBeenCalled()
+            expect(
+                AccountModel.updateAccountByIdOrUserId
+            ).not.toHaveBeenCalled()
+            expect(CacheService.invalidateCache).not.toHaveBeenCalled()
+        })
+    })
 })

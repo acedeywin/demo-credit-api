@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator'
+import { body, query, validationResult } from 'express-validator'
 import { Request, Response, NextFunction } from 'express'
 import { compareUserInfo, verifyAge } from '../utils/helpers'
 import AdjutorService from '../services/adjutor.service'
@@ -17,6 +17,7 @@ export const validateUserRegistration = [
         .withMessage('Last name is required.'),
     body('email').isEmail().withMessage('A valid email is required.'),
     body('password')
+        .notEmpty()
         .isStrongPassword({
             minLength: 8,
             minLowercase: 1,
@@ -115,21 +116,31 @@ export const handleUserRegistrationValidationErrors = async (
     }
 }
 
-export const validateFetchingUser = async (
+export const validateFetchingUser = [
+    query('user_id')
+        .isString()
+        .notEmpty()
+        .withMessage('user_id query parameter is required.'),
+
+    query('account_id')
+        .isString()
+        .notEmpty()
+        .withMessage('account_id query parameter is required.'),
+]
+
+export const handleFetchingUserValidationErrors = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> => {
     try {
-        const { user_id, account_id } = req.query
-
-        if (!user_id) {
-            res.status(404).json({
-                status: 'success',
-                message: 'Missing query parameter',
-            })
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() })
             return
         }
+
+        const { user_id, account_id } = req.query
 
         const user = await UserModel.getUserByIdentifier({
             id: user_id as string,
@@ -142,7 +153,7 @@ export const validateFetchingUser = async (
             })
             return
         }
-        const account = await AccountModel.findAccountById(
+        const account = await AccountModel.getAccountById(
             account_id as string,
             user_id as string
         )
@@ -161,12 +172,24 @@ export const validateFetchingUser = async (
     }
 }
 
-export const validateUserVerification = async (
+export const validateUserVerification = [
+    body('email').isString().notEmpty().withMessage('Email is required.'),
+
+    body('code').isString().notEmpty().withMessage('Code is required.'),
+]
+
+export const handleUserVerificationValidationErrors = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> => {
     try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() })
+            return
+        }
+
         const { email, code } = req.body
 
         const cache = await CacheService.getCache(email)

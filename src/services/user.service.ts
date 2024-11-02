@@ -48,7 +48,7 @@ class UserService {
         try {
             const code = await generateOtp()
 
-            const text = `Hi ${first_name},\n\n Your verification code is: ${code}.\n Do not share your code with anyone.`
+            const text = `Hi ${first_name},\n\n Your verification code is: ${code}.\n\n Do not share your code with anyone.`
             const subject = 'Verification Code'
 
             await CacheService.setCache(email, code)
@@ -62,7 +62,7 @@ class UserService {
     static async getUserById(id: string, account_id: string) {
         try {
             const user = await UserModel.getUserByIdentifier({ id })
-            const account = await AccountModel.findAccountById(
+            const account = await AccountModel.getAccountById(
                 account_id,
                 user?.id as string
             )
@@ -89,7 +89,6 @@ class UserService {
             )
 
             await CacheService.invalidateCache(email)
-
         } catch (error) {
             console.error('Error verifying user account:', error)
             throw new InternalError('User account could not be verified')

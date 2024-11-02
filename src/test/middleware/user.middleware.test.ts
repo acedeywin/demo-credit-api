@@ -4,8 +4,8 @@ import { validationResult } from 'express-validator'
 import {
     validateUserRegistration,
     handleUserRegistrationValidationErrors,
-    validateFetchingUser,
-    validateUserVerification,
+    handleFetchingUserValidationErrors,
+    handleUserVerificationValidationErrors,
 } from '../../middleware/user.middleware'
 import { verifyAge, compareUserInfo } from '../../utils/helpers'
 import AdjutorService from '../../services/adjutor.service'
@@ -18,7 +18,7 @@ jest.mock('../../utils/helpers')
 jest.mock('../../services/adjutor.service')
 jest.mock('../../models/user.model')
 jest.mock('../../models/account.model')
-jest.mock('../../services/cache.service');
+jest.mock('../../services/cache.service')
 
 // Mock ioredis directly
 jest.mock('ioredis', () => {
@@ -223,12 +223,12 @@ describe('User Registration Validation Middleware', () => {
         })
     })
 
-    describe('validateFetchingUser', () => {
+    describe('handleFetchingUserValidationErrors', () => {
         it('should proceed if user and account are found', async () => {
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
                 id: '1',
             })
-            ;(AccountModel.findAccountById as jest.Mock).mockResolvedValue({
+            ;(AccountModel.getAccountById as jest.Mock).mockResolvedValue({
                 id: '2',
             })
 
@@ -241,96 +241,128 @@ describe('User Registration Validation Middleware', () => {
             expect(next).toHaveBeenCalled()
         })
 
-        it('should return 404 if user_id is missing', async () => {
+        it('should return 404 if user is missing', async () => {
             req.query = {} // Set empty query object
 
-            await validateFetchingUser(req as Request, res as Response, next)
+            await handleFetchingUserValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
             expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'Missing query parameter',
+                message: 'User not found',
             })
         })
     })
 
-    describe('validateUserVerification', () => {
-        let req: Partial<Request>;
-        let res: Partial<Response>;
-        let next: NextFunction;
-    
-        const email = 'user@example.com';
-        const code = '123456';
-        const user = { id: '1', email, email_verified: false };
-    
+    describe('handleUserVerificationValidationErrors', () => {
+        let req: Partial<Request>
+        let res: Partial<Response>
+        let next: NextFunction
+
+        const email = 'user@example.com'
+        const code = '123456'
+        const user = { id: '1', email, email_verified: false }
+
         beforeEach(() => {
-            req = { body: { email, code } };
+            req = { body: { email, code } }
             res = {
                 status: jest.fn().mockReturnThis(),
                 json: jest.fn(),
-            };
-            next = jest.fn();
-            jest.clearAllMocks();
-        });
-    
+            }
+            next = jest.fn()
+            jest.clearAllMocks()
+        })
+
         it('should return 404 if cache is not found for the email', async () => {
-            (CacheService.getCache as jest.Mock).mockResolvedValue(null);
-    
-            await validateUserVerification(req as Request, res as Response, next);
-    
-            expect(CacheService.getCache).toHaveBeenCalledWith(email);
-            expect(res.status).toHaveBeenCalledWith(404);
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue(null)
+
+            await handleUserVerificationValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(CacheService.getCache).toHaveBeenCalledWith(email)
+            expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
                 message: 'Invalid Request',
                 status: 'success',
-            });
-        });
-    
+            })
+        })
+
         it('should return 404 if code does not match the cached code', async () => {
-            (CacheService.getCache as jest.Mock).mockResolvedValue('654321');
-    
-            await validateUserVerification(req as Request, res as Response, next);
-    
-            expect(CacheService.getCache).toHaveBeenCalledWith(email);
-            expect(res.status).toHaveBeenCalledWith(404);
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue('654321')
+
+            await handleUserVerificationValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(CacheService.getCache).toHaveBeenCalledWith(email)
+            expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
                 message: 'Invalid code supplied',
                 status: 'success',
-            });
-        });
-    
+            })
+        })
+
         it('should return 404 if user is not found for the email', async () => {
-            (CacheService.getCache as jest.Mock).mockResolvedValue(code);
-            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(null);
-    
-            await validateUserVerification(req as Request, res as Response, next);
-    
-            expect(CacheService.getCache).toHaveBeenCalledWith(email);
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ email });
-            expect(res.status).toHaveBeenCalledWith(404);
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue(code)
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                null
+            )
+
+            await handleUserVerificationValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(CacheService.getCache).toHaveBeenCalledWith(email)
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
+                email,
+            })
+            expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({
                 message: 'Invalid email supplied',
                 status: 'success',
-            });
-        });
-    
+            })
+        })
+
         it('should call next if verification is successful', async () => {
-            (CacheService.getCache as jest.Mock).mockResolvedValue(code);
-            (UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(user);
-    
-            await validateUserVerification(req as Request, res as Response, next);
-    
-            expect(CacheService.getCache).toHaveBeenCalledWith(email);
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ email });
-            expect(next).toHaveBeenCalled();
-        });
-    
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue(code)
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                user
+            )
+
+            await handleUserVerificationValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(CacheService.getCache).toHaveBeenCalledWith(email)
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
+                email,
+            })
+            expect(next).toHaveBeenCalled()
+        })
+
         it('should call next with an error if an exception is thrown', async () => {
-            const error = new Error('Database error');
-            (CacheService.getCache as jest.Mock).mockRejectedValue(error);
-    
-            await validateUserVerification(req as Request, res as Response, next);
-    
-            expect(next).toHaveBeenCalledWith(error);
-        });
-    });
+            const error = new Error('Database error')
+            ;(CacheService.getCache as jest.Mock).mockRejectedValue(error)
+
+            await handleUserVerificationValidationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(next).toHaveBeenCalledWith(error)
+        })
+    })
 })

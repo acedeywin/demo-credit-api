@@ -2,10 +2,13 @@ import { Router } from 'express'
 import UserController from '../controllers/user.controller'
 import {
     handleUserRegistrationValidationErrors,
-    validateFetchingUser,
+    handleFetchingUserValidationErrors,
     validateUserRegistration,
+    handleUserVerificationValidationErrors,
     validateUserVerification,
+    validateFetchingUser,
 } from '../middleware/user.middleware'
+import { authenticateJWT } from '../middleware/auth.middleware'
 
 const userRoutes = Router()
 
@@ -17,10 +20,14 @@ userRoutes.post(
 
 userRoutes.put(
     '/verify-user',
-    validateUserVerification,
+    [...validateUserVerification, handleUserVerificationValidationErrors],
     UserController.verifyUser
 )
 
-userRoutes.get('/', validateFetchingUser, UserController.getUserById)
+userRoutes.get(
+    '/',
+    [authenticateJWT, ...validateFetchingUser, handleFetchingUserValidationErrors],
+    UserController.getUserById
+)
 
 export default userRoutes

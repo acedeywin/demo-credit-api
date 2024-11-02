@@ -133,30 +133,38 @@ describe('UserController', () => {
         })
     })
 
-    describe('verifyUser', () => {        
+    describe('verifyUser', () => {
         it('should return 201 and success message when user verification is successful', async () => {
             // Mock UserService.verifyUser to resolve successfully
-            (UserService.verifyUser as jest.Mock).mockResolvedValue(true);
-    
-            await UserController.verifyUser(req as Request, res as Response, next);
-    
-            expect(UserService.verifyUser).toHaveBeenCalledWith(req.body.email);
-            expect(res.status).toHaveBeenCalledWith(201);
+            ;(UserService.verifyUser as jest.Mock).mockResolvedValue(true)
+
+            await UserController.verifyUser(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(UserService.verifyUser).toHaveBeenCalledWith(req.body.email)
+            expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
                 message: 'User account verified successfully',
-            });
-        });
-    
+            })
+        })
+
         it('should call next with an error if user verification fails', async () => {
-            const error = new Error('Verification failed');
+            const error = new Error('Verification failed')
             // Mock UserService.verifyUser to throw an error
-            (UserService.verifyUser as jest.Mock).mockRejectedValue(error);
-    
-            await UserController.verifyUser(req as Request, res as Response, next);
-    
-            expect(UserService.verifyUser).toHaveBeenCalledWith(req.body.email);
-            expect(next).toHaveBeenCalledWith(error);
-        });
-    });
+            ;(UserService.verifyUser as jest.Mock).mockRejectedValue(error)
+
+            await UserController.verifyUser(
+                req as Request,
+                res as Response,
+                next
+            )
+
+            expect(UserService.verifyUser).toHaveBeenCalledWith(req.body.email)
+            expect(next).toHaveBeenCalledWith(error)
+        })
+    })
 })

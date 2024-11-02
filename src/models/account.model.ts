@@ -6,11 +6,21 @@ class AccountModel {
         await db('accounts').insert(payload)
     }
 
-    static async findAccountById(
-        id: string,
-        user_id: string
+    static async getAccountById(
+        id?: string,
+        user_id?: string
     ): Promise<AccountDto | null> {
-        const account = await db('accounts').where({ id, user_id }).first()
+        const query = db('accounts')
+
+        if (user_id) {
+            query.where('user_id', user_id)
+        }
+
+        if (id && user_id) {
+            query.where({ id, user_id })
+        }
+
+        const account = await query.first()
         return account || null
     }
 

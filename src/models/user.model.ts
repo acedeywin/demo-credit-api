@@ -27,7 +27,6 @@ class UserModel {
         id: string,
         payload: Partial<UserDto>
     ): Promise<UserDto | null> {
- 
         const rowsAffected = await db('users').where({ id }).update(payload)
 
         if (!rowsAffected) {
