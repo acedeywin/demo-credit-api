@@ -1,18 +1,24 @@
 {
-    "name": "lendsqr-wallet-service",
+    "name": "demo-credit-api",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
         "compile": "npx tsc",
         "dev": "nodemon --watch src --exec ts-node src/index.ts",
-        "start": "node buid/src/index.js",
+        "start": "node dist/index.js",
         "migration:up": "npx knex migrate:latest --knexfile src/config/knexfile.ts",
         "migration:down": "npx knex migrate:rollback --all --knexfile src/config/knexfile.ts",
         "lint": "eslint src/**/*.ts",
         "lint:fix": "npm run lint --fix",
         "format": "prettier . --write",
         "test": "jest --runInBand",
-        "test:debug": "npm run test -- --detectOpenHandles"
+        "test:debug": "npm run test -- --detectOpenHandles",
+        "docker:build": "docker build -t demo-credit-api .",
+        "docker:run": "docker run -p 8250:8250 demo-credit-api",
+        "docker:stop": "docker stop demo-credit-api"
+    },
+    "engines": {
+        "node": ">=20.0.0"
     },
     "keywords": [],
     "author": "",
