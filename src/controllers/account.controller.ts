@@ -24,6 +24,6 @@ class AccountController {
             next(error)
         }
     }
-} //209cf65b-df32-42c6-b8e4-e80f02886753
+}
 
 export default AccountController

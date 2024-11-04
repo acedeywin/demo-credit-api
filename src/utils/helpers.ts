@@ -23,13 +23,13 @@ export const verifyAge = async (dob: Date) => {
 export const compareUserInfo = async (value: string, compareValue: string) =>
     value.toLocaleLowerCase() === compareValue.toLocaleLowerCase()
 
-const generateAccountNumber = async (): Promise<string> => {
+export const generateAccountNumber = async (): Promise<string> => {
     const timestamp = Date.now().toString().slice(-4) // Last 4 digits of timestamp
     const randomDigits = Math.floor(100000 + Math.random() * 900000).toString() // 6 random digits
     return timestamp + randomDigits // Concatenate for a 10-digit account number
 }
 
-const generateUniqueId = async (
+export const generateUniqueId = async (
     tableName: string,
     columnName: string,
     prefix: string = ''
