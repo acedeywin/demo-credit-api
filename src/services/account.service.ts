@@ -1,3 +1,4 @@
+import { Knex } from 'knex'
 import AccountModel from '../models/account.model'
 import UserModel from '../models/user.model'
 import { AccountDto, AccountStatus, PaymentType } from '../types/account.types'
@@ -52,18 +53,17 @@ class AccountService {
         }
     }
 
-    async getBalance(): Promise<number> {
-        const account = await AccountModel.getAccountDetils(this.account_number)
-        return account ? Number(account.balance) : 0
+    async getBalance(trx: Knex.Transaction): Promise<number> {
+        const balance = await AccountModel.getBalance(this.account_number, trx)
+        return balance ? Number(balance) : 0
     }
 
-    async updateBalance(amount: number, type: PaymentType): Promise<void> {
-        const account = await AccountModel.updateBalance(
-            this.account_number,
-            amount,
-            type
-        )
-        console.log('account is here', account)
+    async updateBalance(
+        amount: number,
+        type: PaymentType,
+        trx: Knex.Transaction
+    ): Promise<void> {
+        await AccountModel.updateBalance(this.account_number, amount, type, trx)
     }
 
     async accountDetails() {
@@ -75,7 +75,8 @@ class AccountService {
         amount: number,
         reference_id: string,
         description: string,
-        type: PaymentType
+        type: PaymentType,
+        trx: Knex.Transaction
     ) {
         try {
             const account = await this.accountDetails()
@@ -86,7 +87,7 @@ class AccountService {
 
             const transaction_type = type.toLocaleUpperCase()
             const account_number = maskNumber(String(account?.account_number))
-            const balance = await this.getBalance()
+            const balance = await this.getBalance(trx)
             const format_balance = formatCurrency(balance)
             const format_amount = formatCurrency(Number(amount))
             const date = formatDate(new Date())

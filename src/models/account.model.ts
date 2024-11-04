@@ -1,3 +1,4 @@
+import { Knex } from 'knex'
 import db from '../config/db/connection'
 import { AccountDto, PaymentType } from '../types/account.types'
 
@@ -18,16 +19,26 @@ class AccountModel {
         return account || null
     }
 
+    static async getBalance(account_number: string, trx: Knex.Transaction) {
+        const { balance } = await trx('accounts')
+            .where({ account_number })
+            .select('balance')
+            .first()
+
+        return balance
+    }
+
     static async updateBalance(
         account_number: string,
         amount: number,
-        type: PaymentType
+        type: PaymentType,
+        trx: Knex.Transaction
     ) {
         return type === PaymentType.CREDIT
-            ? await db('accounts')
+            ? await trx('accounts')
                   .where({ account_number })
                   .increment('balance', amount)
-            : await db('accounts')
+            : await trx('accounts')
                   .where({ account_number })
                   .decrement('balance', amount)
     }

@@ -1,3 +1,4 @@
+import db from '../config/db/connection'
 import TransactionModel from '../models/transaction.model'
 import { PaymentType } from '../types/account.types'
 import { TransactionDto } from '../types/transaction.types'
@@ -23,25 +24,29 @@ class TransactionService {
                 details?.user_id as string,
                 type
             )
-            await account.updateBalance(amount, type)
-            const balance_after = await account.getBalance()
 
-            const transaction: TransactionDto = {
-                account_id: details?.id as string,
-                amount,
-                transaction_type: type,
-                balance_after,
-                reference_id,
-                description,
-            }
+            await db.transaction(async (trx) => {
+                await account.updateBalance(amount, type, trx)
+                const balance_after = await account.getBalance(trx)
 
-            await TransactionModel.createTransaction(transaction)
-            await account.notification(
-                amount,
-                reference_id,
-                description as string,
-                type
-            )
+                const transaction: TransactionDto = {
+                    account_id: details?.id as string,
+                    amount,
+                    transaction_type: type,
+                    balance_after,
+                    reference_id,
+                    description,
+                }
+
+                await TransactionModel.createTransaction(transaction, trx)
+                await account.notification(
+                    amount,
+                    reference_id,
+                    description as string,
+                    type,
+                    trx
+                )
+            })
         } catch (error) {
             throw new InternalError('Account update failed:', error)
         }

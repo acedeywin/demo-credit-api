@@ -41,7 +41,7 @@ describe('AccountController Tests', () => {
         expect(res.json).toHaveBeenCalledWith({
             status: 'success',
             message: 'User account created successfully',
-            data: account_number,
+            data: { account_number },
         })
     })
 

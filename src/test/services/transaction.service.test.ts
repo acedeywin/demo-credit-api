@@ -14,6 +14,10 @@ jest.mock('../../utils/helpers', () => ({
     generateReferenceId: jest.fn(),
 }))
 
+jest.mock('../../config/db/connection', () => ({
+    transaction: jest.fn((cb) => cb(jest.fn())),
+}))
+
 // Mock ioredis directly
 jest.mock('ioredis', () => {
     return jest.fn().mockImplementation(() => ({
@@ -99,8 +103,8 @@ describe('TransactionService', () => {
             expect(mockAccountServiceInstance.accountDetails).toHaveBeenCalled()
             expect(
                 mockAccountServiceInstance.updateBalance
-            ).toHaveBeenCalledWith(amount, PaymentType.CREDIT)
-            expect(mockAccountServiceInstance.getBalance).toHaveBeenCalled()
+            ).toHaveBeenCalledWith(amount, PaymentType.CREDIT, expect.anything())
+            expect(mockAccountServiceInstance.getBalance).toHaveBeenCalledWith(expect.anything())
             expect(TransactionModel.createTransaction).toHaveBeenCalledWith(
                 expect.objectContaining<TransactionDto>({
                     account_id: mockAccountDetails.id,
@@ -109,7 +113,7 @@ describe('TransactionService', () => {
                     balance_after: mockAccountDetails.balance,
                     reference_id: 'ref123',
                     description,
-                })
+                }), expect.anything()
             )
             expect(
                 mockAccountServiceInstance.notification
@@ -117,7 +121,8 @@ describe('TransactionService', () => {
                 amount,
                 'ref123',
                 description,
-                PaymentType.CREDIT
+                PaymentType.CREDIT,
+                expect.anything()
             )
         })
 

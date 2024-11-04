@@ -115,7 +115,7 @@ describe('UserController', () => {
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'User account fetched successfully',
+                message: 'User account fetched successfully.',
                 data: userData,
             })
         })

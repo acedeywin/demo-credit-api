@@ -32,7 +32,7 @@ class UserController {
 
             res.status(201).json({
                 status: 'success',
-                message: 'User account fetched successfully',
+                message: 'User account fetched successfully.',
                 data: user,
             })
             return

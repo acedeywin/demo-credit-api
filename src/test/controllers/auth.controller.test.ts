@@ -35,6 +35,7 @@ describe('AuthController', () => {
             expect(AuthService.generateToken).toHaveBeenCalledWith(user.id)
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith({
+                status: 'success',
                 message: 'Logged in successfully',
                 token,
                 data: { user },
@@ -58,7 +59,8 @@ describe('AuthController', () => {
 
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith({
-                message: 'Logged out successfully',
+                status: 'success',
+                message: 'Logged out successfully.',
             })
         })
     })

@@ -17,7 +17,7 @@ class AccountController {
             res.status(201).json({
                 status: 'success',
                 message: 'User account created successfully',
-                data: account,
+                data: { account_number: account },
             })
             return
         } catch (error) {

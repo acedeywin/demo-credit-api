@@ -16,10 +16,6 @@ export async function up(knex: Knex): Promise<void> {
         table.string('reference_id').unique().notNullable()
         table.timestamps(true, true)
     })
-
-    // await knex.schema.alterTable('transactions', (table) => {
-    //     table.string('reference_id').unique().notNullable() // Add the new column with the desired type
-    // });
 }
 
 export async function down(knex: Knex): Promise<void> {
