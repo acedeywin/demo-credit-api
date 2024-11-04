@@ -20,19 +20,27 @@ transactionRoutes.post(
 
 transactionRoutes.post(
     '/withdraw-fund',
-    [authenticateJWT,...validateTransaction, handleWithdrawalValidationErrors],
+    [authenticateJWT, ...validateTransaction, handleWithdrawalValidationErrors],
     TransactionController.withdrawFund
 )
 
 transactionRoutes.post(
     '/transfer-fund',
-    [authenticateJWT, ...validateTransferTransaction, handleTransferTransactionValidationErrors],
+    [
+        authenticateJWT,
+        ...validateTransferTransaction,
+        handleTransferTransactionValidationErrors,
+    ],
     TransactionController.transferFund
 )
 
 transactionRoutes.get(
     '/history',
-    [authenticateJWT,...validateTransactionHistory, handleTransactionHistoryValidationErrors],
+    [
+        authenticateJWT,
+        ...validateTransactionHistory,
+        handleTransactionHistoryValidationErrors,
+    ],
     TransactionController.transactionHistory
 )
 

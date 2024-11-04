@@ -233,7 +233,7 @@ The project follows a modular MVC structure. The main components are:
 -   **Request Body**:
     ```json
     {
-        "email": "user@gmail.com",
+        "email": "user@gmail.com"
     }
     ```
 -   **Response**:
@@ -241,8 +241,8 @@ The project follows a modular MVC structure. The main components are:
 ```json
 {
     "status": "success",
-    "message": "A password reset code will been sent to user@gmail.com if it exist.",
-    }
+    "message": "A password reset code will been sent to user@gmail.com if it exist."
+}
 ```
 
 ### Change Password
@@ -263,8 +263,8 @@ The project follows a modular MVC structure. The main components are:
 ```json
 {
     "status": "success",
-    "message": "Password reset was successful.",
-    }
+    "message": "Password reset was successful."
+}
 ```
 
 ## Account

@@ -43,8 +43,8 @@ describe('TransactionService', () => {
         balance: 1000,
     }
     const mockTransactions = [
-        { id: 't1', amount: 50, transaction_type: PaymentType.CREDIT },
-        { id: 't2', amount: 30, transaction_type: PaymentType.DEBIT },
+        { id: 't1', amount: 50, transaction_type: PaymentType.CREDIT, account_id: '2', balance_after: 1100, reference_id: 'STV-2345646786' },
+        { id: 't2', amount: 30, transaction_type: PaymentType.DEBIT, account_id: '2', balance_after: 1100, reference_id: 'STV-2345646786' },
     ]
 
     let mockAccountServiceInstance: jest.Mocked<AccountService>
@@ -103,8 +103,14 @@ describe('TransactionService', () => {
             expect(mockAccountServiceInstance.accountDetails).toHaveBeenCalled()
             expect(
                 mockAccountServiceInstance.updateBalance
-            ).toHaveBeenCalledWith(amount, PaymentType.CREDIT, expect.anything())
-            expect(mockAccountServiceInstance.getBalance).toHaveBeenCalledWith(expect.anything())
+            ).toHaveBeenCalledWith(
+                amount,
+                PaymentType.CREDIT,
+                expect.anything()
+            )
+            expect(mockAccountServiceInstance.getBalance).toHaveBeenCalledWith(
+                expect.anything()
+            )
             expect(TransactionModel.createTransaction).toHaveBeenCalledWith(
                 expect.objectContaining<TransactionDto>({
                     account_id: mockAccountDetails.id,
@@ -113,7 +119,8 @@ describe('TransactionService', () => {
                     balance_after: mockAccountDetails.balance,
                     reference_id: 'ref123',
                     description,
-                }), expect.anything()
+                }),
+                expect.anything()
             )
             expect(
                 mockAccountServiceInstance.notification

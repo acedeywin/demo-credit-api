@@ -148,7 +148,7 @@ describe('User Middleware Tests', () => {
             expect(res.status).toHaveBeenCalledWith(403)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'Phone number already exist.',
+                message: 'Phone number already exists.',
             })
         })
 
@@ -233,9 +233,7 @@ describe('User Middleware Tests', () => {
 
         it('should call next if verification is successful', async () => {
             // Mock expected values for successful verification
-            ;(CacheService.getCache as jest.Mock).mockResolvedValue(
-                code
-            )
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue(code)
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
                 id: '1',
                 email,
@@ -313,9 +311,7 @@ describe('User Middleware Tests', () => {
 
         it('should call next if verification is successful', async () => {
             // Mock expected values for successful verification
-            ;(CacheService.getCache as jest.Mock).mockResolvedValue(
-                code
-            )
+            ;(CacheService.getCache as jest.Mock).mockResolvedValue(code)
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
                 id: '1',
                 email,

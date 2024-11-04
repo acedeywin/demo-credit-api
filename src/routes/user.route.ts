@@ -15,7 +15,11 @@ const userRoutes = Router()
 
 userRoutes.post(
     '/register',
-    [...validateUserData, ...validateUserRegistration, handleUserRegistrationValidationErrors],
+    [
+        ...validateUserData,
+        ...validateUserRegistration,
+        handleUserRegistrationValidationErrors,
+    ],
     UserController.createUser
 )
 

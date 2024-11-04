@@ -7,28 +7,33 @@ import AccountModel from '../models/account.model'
 import CacheService from '../services/cache.service'
 import { validateEmail } from './auth.middleware'
 
+/**
+ * Validation middleware for user data, ensuring valid email, password strength, and matching passwords.
+ */
 export const validateUserData = [
-        validateEmail(),
-        body('password')
-            .notEmpty()
-            .isStrongPassword({
-                minLength: 8,
-                minLowercase: 1,
-                minUppercase: 1,
-                minNumbers: 1,
-                minSymbols: 1,
-            })
-            .withMessage(
-                'Password should contain at least 1 uppercase character, 1 lowercase, 1 number, 1 symbol, and should be at least 8 characters long.'
-            ),
-        body('confirm_password')
-            .notEmpty()
-            .withMessage('Confirm password is required.')
-            .custom((value, { req }) => value === req.body.password)
-            .withMessage('Passwords do not match.'),
-    ]
+    validateEmail(),
+    body('password')
+        .notEmpty()
+        .isStrongPassword({
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+        })
+        .withMessage(
+            'Password should contain at least 1 uppercase character, 1 lowercase, 1 number, 1 symbol, and should be at least 8 characters long.'
+        ),
+    body('confirm_password')
+        .notEmpty()
+        .withMessage('Confirm password is required.')
+        .custom((value, { req }) => value === req.body.password)
+        .withMessage('Passwords do not match.'),
+]
 
-
+/**
+ * Validation middleware for user registration, ensuring required fields for registration.
+ */
 export const validateUserRegistration = [
     body('first_name')
         .isString()
@@ -38,7 +43,6 @@ export const validateUserRegistration = [
         .isString()
         .notEmpty()
         .withMessage('Last name is required.'),
-    
     body('phone_number')
         .isMobilePhone('any')
         .withMessage('A valid phone number is required.'),
@@ -46,9 +50,17 @@ export const validateUserRegistration = [
         .isNumeric()
         .notEmpty()
         .isLength({ min: 11, max: 11 })
-        .withMessage('NIN should have 11 character.'),
+        .withMessage('NIN should have 11 characters.'),
 ]
 
+/**
+ * Handles validation errors for user registration, including age, NIN verification, and existing account checks.
+ *
+ * @param {Request} req - The request object containing user details such as name, phone number, and NIN in the body.
+ * @param {Response} res - The response object used to send validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ * @returns {Promise<void>}
+ */
 export const handleUserRegistrationValidationErrors = async (
     req: Request,
     res: Response,
@@ -77,7 +89,7 @@ export const handleUserRegistrationValidationErrors = async (
         if (phoneExist?.phone_number === phone_number) {
             res.status(403).json({
                 status: 'success',
-                message: 'Phone number already exist.',
+                message: 'Phone number already exists.',
             })
             return
         }
@@ -134,6 +146,9 @@ export const handleUserRegistrationValidationErrors = async (
     }
 }
 
+/**
+ * Validation middleware for fetching user details, ensuring the presence of `user_id` in the query.
+ */
 export const validateFetchingUser = [
     query('user_id')
         .isString()
@@ -141,6 +156,14 @@ export const validateFetchingUser = [
         .withMessage('user_id query parameter is required.'),
 ]
 
+/**
+ * Handles validation errors when fetching a user, including checking for account existence.
+ *
+ * @param {Request} req - The request object containing `user_id` in the query.
+ * @param {Response} res - The response object used to send validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ * @returns {Promise<void>}
+ */
 export const handleUserValidationErrors = async (
     req: Request,
     res: Response,
@@ -166,6 +189,7 @@ export const handleUserValidationErrors = async (
             })
             return
         }
+
         const account = await AccountModel.getAccountByUserId(user_id as string)
 
         if (!account) {
@@ -182,12 +206,22 @@ export const handleUserValidationErrors = async (
     }
 }
 
+/**
+ * Validation middleware for user verification, ensuring valid email and verification code.
+ */
 export const validateUserVerification = [
     validateEmail(),
-    body('code').isString().notEmpty().withMessage('Code is required.')
-
+    body('code').isString().notEmpty().withMessage('Code is required.'),
 ]
 
+/**
+ * Handles validation errors for user verification, including cache verification for the provided code.
+ *
+ * @param {Request} req - The request object containing `email` and `code` in the body.
+ * @param {Response} res - The response object used to send validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ * @returns {Promise<void>}
+ */
 export const handleUserVerificationValidationErrors = async (
     req: Request,
     res: Response,
@@ -229,6 +263,7 @@ export const handleUserVerificationValidationErrors = async (
             })
             return
         }
+
         next()
     } catch (error) {
         next(error)

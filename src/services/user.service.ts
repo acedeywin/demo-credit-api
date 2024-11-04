@@ -13,7 +13,17 @@ import {
 import CacheService from './cache.service'
 import EncryptionService from './encryption.service'
 
+/**
+ * UserService provides methods for managing user accounts, including creation, verification, and email notifications.
+ */
 class UserService {
+    /**
+     * Creates a new user, hashes the password, generates a unique ID and account number, and sends a verification email.
+     * 
+     * @param {UserDto} user - The user details to be created.
+     * @returns {Promise<void>}
+     * @throws {InternalError} - If user creation fails.
+     */
     static async createUser(user: UserDto): Promise<void> {
         try {
             const account_number = await generateUniqueAccountNumber()
@@ -33,7 +43,11 @@ class UserService {
             const subject = 'Verification Code'
 
             await AccountModel.createAccount(account)
-            await this.sendVerificationEmail(user.email, user.first_name, subject)
+            await this.sendVerificationEmail(
+                user.email,
+                user.first_name,
+                subject
+            )
         } catch (error) {
             console.error('Error creating user account:', error)
             throw new InternalError(
@@ -42,6 +56,15 @@ class UserService {
         }
     }
 
+    /**
+     * Sends a verification email with a one-time password (OTP) to the specified user.
+     * 
+     * @param {string} email - The recipient's email address.
+     * @param {string} first_name - The recipient's first name.
+     * @param {string} subject - The subject of the email.
+     * @returns {Promise<void>}
+     * @throws {InternalError} - If email sending fails.
+     */
     static async sendVerificationEmail(
         email: string,
         first_name: string,
@@ -50,7 +73,7 @@ class UserService {
         try {
             const code = await generateOtp()
             const text = `Hi ${first_name},\n\n Your ${subject.toLocaleLowerCase()} is: ${code}.\n\n Do not share your code with anyone.`
-            
+
             await CacheService.setCache(email, code)
             await sendEmail(email, subject, text)
         } catch (error) {
@@ -59,7 +82,14 @@ class UserService {
         }
     }
 
-    static async getUserById(id: string) {
+    /**
+     * Retrieves a user by their ID and associated account information, excluding the password.
+     * 
+     * @param {string} id - The unique user ID.
+     * @returns {Promise<{ user: Partial<UserDto>; account: AccountDto | null }>} - The user's details and associated account.
+     * @throws {InternalError} - If fetching the user fails.
+     */
+    static async getUserById(id: string): Promise<{ user: Partial<UserDto>; account: AccountDto[] | null }> {
         try {
             const user = await UserModel.getUserByIdentifier({ id })
             const account = await AccountModel.getAccountByUserId(
@@ -75,7 +105,14 @@ class UserService {
         }
     }
 
-    static async verifyUser(email: string) {
+    /**
+     * Verifies a user's account by setting email verification status to true and activating the user's account.
+     * 
+     * @param {string} email - The email address of the user to verify.
+     * @returns {Promise<void>}
+     * @throws {InternalError} - If user verification fails.
+     */
+    static async verifyUser(email: string): Promise<void> {
         try {
             const user = await UserModel.getUserByIdentifier({ email })
 

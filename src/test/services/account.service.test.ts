@@ -38,8 +38,12 @@ describe('AccountService Tests', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-        ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(mockUser)
-        ;(generateUniqueAccountNumber as jest.Mock).mockResolvedValue(account_number)
+        ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+            mockUser
+        )
+        ;(generateUniqueAccountNumber as jest.Mock).mockResolvedValue(
+            account_number
+        )
         ;(AccountModel.createAccount as jest.Mock).mockResolvedValue(undefined)
         ;(sendEmail as jest.Mock).mockResolvedValue('Email sent successfully')
     })
@@ -73,7 +77,9 @@ describe('AccountService Tests', () => {
         it('should create a new account and send email', async () => {
             const result = await AccountService.createNewAccount(user_id)
 
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({ id: user_id })
+            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
+                id: user_id,
+            })
             expect(generateUniqueAccountNumber).toHaveBeenCalled()
             expect(AccountModel.createAccount).toHaveBeenCalledWith({
                 account_number,
@@ -89,15 +95,23 @@ describe('AccountService Tests', () => {
         })
 
         it('should throw an InternalError if account creation fails', async () => {
-            ;(AccountModel.createAccount as jest.Mock).mockRejectedValueOnce(new Error('DB Error'))
+            ;(AccountModel.createAccount as jest.Mock).mockRejectedValueOnce(
+                new Error('DB Error')
+            )
 
-            await expect(AccountService.createNewAccount(user_id)).rejects.toThrow(InternalError)
+            await expect(
+                AccountService.createNewAccount(user_id)
+            ).rejects.toThrow(InternalError)
         })
 
         it('should throw an InternalError if email sending fails', async () => {
-            ;(sendEmail as jest.Mock).mockRejectedValueOnce(new Error('Email service error'))
+            ;(sendEmail as jest.Mock).mockRejectedValueOnce(
+                new Error('Email service error')
+            )
 
-            await expect(AccountService.createNewAccount(user_id)).rejects.toThrow(InternalError)
+            await expect(
+                AccountService.createNewAccount(user_id)
+            ).rejects.toThrow(InternalError)
         })
     })
 

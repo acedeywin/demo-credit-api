@@ -8,7 +8,11 @@ import { CustomRequest } from '../types/auth.types'
 import UserService from '../services/user.service'
 import AuthService from '../services/auth.service'
 
-export const validateEmail = () => body('email').isEmail().withMessage('A valid email is required.')
+/**
+ * Validation for email field to ensure it is a valid email format.
+ */
+export const validateEmail = () =>
+    body('email').isEmail().withMessage('A valid email is required.')
 
 export const validateLogin = [
     validateEmail(),
@@ -18,6 +22,16 @@ export const validateLogin = [
         .withMessage('A valid password is required'),
 ]
 
+/**
+ * Handles validation errors for login.
+ * If validation fails or user is invalid, sends an appropriate response.
+ * If validation succeeds, proceeds to the next middleware.
+ *
+ * @param {Request} req - The request object containing `email` and `password` in the body.
+ * @param {Response} res - The response object used to send back validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ * @returns {Promise<void>}
+ */
 export const handleLoginValidatationErrors = async (
     req: Request,
     res: Response,
@@ -45,7 +59,11 @@ export const handleLoginValidatationErrors = async (
                 status: 'success',
                 message: `Please, verify your email. Verification code successfully sent to ${email}`,
             })
-            await UserService.sendVerificationEmail(email, user.first_name, subject)
+            await UserService.sendVerificationEmail(
+                email,
+                user.first_name,
+                subject
+            )
             return
         }
 
@@ -68,48 +86,62 @@ export const handleLoginValidatationErrors = async (
 export const resetPasswordValidation = [
     validateEmail(),
 
-    (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
+    /**
+     * Middleware to handle validation errors for password reset requests.
+     * If validation fails, responds with a 400 status and error details.
+     * If validation passes, proceeds to the next middleware.
+     *
+     * @param {Request} req - The request object.
+     * @param {Response} res - The response object used to send validation error messages or proceed.
+     * @param {NextFunction} next - The next middleware function in the stack.
+     */
+    (req: Request, res: Response, next: NextFunction) => {
         try {
-    
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
                 res.status(400).json({ errors: errors.array() })
                 return
             }
-    
             next()
         } catch (error) {
             next(error)
         }
-    }
+    },
 ]
 
+/**
+ * Handles validation errors for password change requests.
+ *
+ * @param {CustomRequest} req - The custom request object containing user data.
+ * @param {Response} res - The response object used to send back validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ */
 export const handleChangePasswordvalidationError = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
 ) => {
     try {
-
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
             res.status(400).json({ errors: errors.array() })
             return
         }
-
         next()
-
-        
     } catch (error) {
-       next(error) 
+        next(error)
     }
 }
 
-
+/**
+ * Middleware to authenticate JSON Web Token (JWT) in requests.
+ * Checks for authorization header, verifies the token, and attaches user info to request.
+ * Responds with 401 for missing/expired tokens or 403 for invalid tokens.
+ *
+ * @param {CustomRequest} req - The custom request object with user property.
+ * @param {Response} res - The response object used to send back authentication error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ */
 export const authenticateJWT = async (
     req: CustomRequest,
     res: Response,

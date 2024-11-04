@@ -3,8 +3,18 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+/**
+ * AdjutorService provides methods for interacting with the Adjutor API, including data fetching, karma checks, and NIN verification.
+ */
 class AdjutorService {
-    static async fetchData(path: string) {
+    /**
+     * Fetches data from the Adjutor API based on the specified path.
+     * 
+     * @param {string} path - The API endpoint path to fetch data from.
+     * @returns {Promise<Response>} - The API response.
+     * @throws {InternalError} - If the data fetch operation fails.
+     */
+    static async fetchData(path: string): Promise<Response> {
         try {
             const baseUrl = process.env.ADJUTOR_URL
 
@@ -21,7 +31,6 @@ class AdjutorService {
             }
 
             const response = await fetch(`${baseUrl}/${path}`, requestOptions)
-
             return response
         } catch (error) {
             console.error('Error fetching data:', error)
@@ -29,11 +38,17 @@ class AdjutorService {
         }
     }
 
-    static async karmaCheck(nin: string) {
+    /**
+     * Checks the karma status of a user based on their NIN.
+     * 
+     * @param {string} nin - The National Identification Number of the user.
+     * @returns {Promise<boolean>} - True if the karma check is successful, otherwise false.
+     * @throws {InternalError} - If the karma check operation fails.
+     */
+    static async karmaCheck(nin: string): Promise<boolean> {
         try {
             const path = `karma/${nin}`
             const response = await this.fetchData(path)
-
             return response.status === 200
         } catch (error) {
             console.error('Karma check failed:', error)
@@ -41,7 +56,15 @@ class AdjutorService {
         }
     }
 
-    static async verifyNIN(nin: string) {
+    /**
+     * Verifies the NIN (National Identification Number) of a user and retrieves user details.
+     * 
+     * @param {string} nin - The National Identification Number to verify.
+     * @returns {Promise<{ first_name: string; last_name: string; mobile: string }>} - The user's verified information including first name, last name, and mobile number.
+     * @throws {ForbiddenError} - If the NIN is not valid.
+     * @throws {InternalError} - If the NIN verification operation fails.
+     */
+    static async verifyNIN(nin: string): Promise<{ first_name: string; last_name: string; mobile: string }> {
         try {
             const path = `nin/${nin}`
             const response = await this.fetchData(path)
