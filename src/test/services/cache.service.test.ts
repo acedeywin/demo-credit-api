@@ -21,7 +21,7 @@ describe('CacheService', () => {
 
             expect(redisClient.set).toHaveBeenCalledWith(
                 `key:${key}`,
-                JSON.stringify(data),
+                data,
                 'EX',
                 3600
             )
@@ -30,9 +30,7 @@ describe('CacheService', () => {
 
     describe('getCache', () => {
         it('should return cached data if present', async () => {
-            ;(redisClient.get as jest.Mock).mockResolvedValueOnce(
-                JSON.stringify(data)
-            )
+            ;(redisClient.get as jest.Mock).mockResolvedValueOnce(data)
 
             const result = await CacheService.getCache(key)
             expect(redisClient.get).toHaveBeenCalledWith(`key:${key}`)

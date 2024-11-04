@@ -4,7 +4,6 @@ import sendEmail from '../../utils/email'
 jest.mock('nodemailer')
 
 const mockSendMail = jest.fn()
-
 ;(nodemailer.createTransport as jest.Mock).mockReturnValue({
     sendMail: mockSendMail,
 })
@@ -60,7 +59,9 @@ describe('sendEmail', () => {
             callback(error, null)
         })
 
-        await sendEmail(to, subject, text)
+        await expect(sendEmail(to, subject, text)).rejects.toThrow(
+            'Failed to send email'
+        )
 
         expect(consoleErrorSpy).toHaveBeenCalledWith(
             'Error sending email:',

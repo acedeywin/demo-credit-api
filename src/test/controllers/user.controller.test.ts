@@ -73,7 +73,8 @@ describe('UserController', () => {
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'User account created successfully',
+                message:
+                    'Account successfully created. Verification code sent to john@example.com',
             })
         })
 
@@ -110,7 +111,7 @@ describe('UserController', () => {
                 next
             )
 
-            expect(UserService.getUserById).toHaveBeenCalledWith('1', '2')
+            expect(UserService.getUserById).toHaveBeenCalledWith('1')
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
@@ -148,7 +149,7 @@ describe('UserController', () => {
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'User account verified successfully',
+                message: 'Account successfully verified. Proceed to login.',
             })
         })
 

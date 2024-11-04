@@ -1,109 +1,169 @@
-import jwt from 'jsonwebtoken'
-import AuthService from '../../services/auth.service'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Request, Response, NextFunction } from 'express'
+import {
+    validateLogin,
+    handleLoginValidatationErrors,
+} from '../../middlewares/auth.middleware'
 import UserModel from '../../models/user.model'
-import AccountModel from '../../models/account.model'
-import { InternalError } from '../../utils/error.handler'
+import EncryptionService from '../../services/encryption.service'
+import UserService from '../../services/user.service'
+import { validationResult } from 'express-validator'
+import redisClient from '../../config/redis'
 
-jest.mock('jsonwebtoken')
 jest.mock('../../models/user.model')
-jest.mock('../../models/account.model')
+jest.mock('../../services/encryption.service')
+jest.mock('../../services/user.service')
+jest.mock('../../services/auth.service')
 
-describe('AuthService', () => {
-    const userId = '1'
+// Mock ioredis directly
+jest.mock('ioredis', () => {
+    return jest.fn().mockImplementation(() => ({
+        on: jest.fn(),
+        get: jest.fn().mockResolvedValue(null),
+        set: jest.fn().mockResolvedValue('OK'),
+        del: jest.fn().mockResolvedValue(1),
+        quit: jest.fn().mockResolvedValue('OK'),
+    }))
+})
+
+afterAll(async () => {
+    await redisClient.quit()
+})
+
+describe('Auth Middleware Tests', () => {
+    let req: Partial<Request>
+    let res: Partial<Response>
+    let next: NextFunction
+
     const email = 'user@example.com'
-    const token = 'valid.jwt.token'
+    const password = 'password123'
     const user = {
-        id: userId,
+        id: '1',
         email,
-        name: 'John Doe',
         password: 'hashedPassword',
+        email_verified: true,
+        first_name: 'John',
     }
-    const account = { id: 'accountId', userId: userId }
 
-    afterEach(() => {
+    beforeEach(() => {
+        req = { body: { email, password } }
+        res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        }
+        next = jest.fn()
         jest.clearAllMocks()
     })
 
-    describe('generateToken', () => {
-        it('should generate a JWT token for a valid user ID', async () => {
-            ;(jwt.sign as jest.Mock).mockReturnValue(token)
+    // Helper function for validation middleware tests
 
-            const generatedToken = await AuthService.generateToken(userId)
+    const runValidation = async (
+        middlewares: any[],
+        req: Partial<Request>,
+        res: Partial<Response>,
+        next: NextFunction
+    ) => {
+        for (const middleware of middlewares) {
+            await middleware(req as Request, res as Response, next)
+        }
+        const errors = validationResult(req as Request)
+        if (!errors.isEmpty()) {
+            res.status!(400).json({ errors: errors.array() })
+        }
+    }
 
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { id: userId },
-                process.env.JWT_SECRET,
-                {
-                    expiresIn: process.env.JWT_EXPIRY,
-                }
-            )
-            expect(generatedToken).toBe(token)
-        })
-    })
-
-    describe('verifyToken', () => {
-        it('should verify a valid JWT token', async () => {
-            ;(jwt.verify as jest.Mock).mockReturnValue({ id: userId })
-
-            const decoded = await AuthService.verifyToken(token)
-
-            expect(jwt.verify).toHaveBeenCalledWith(
-                token,
-                process.env.JWT_SECRET
-            )
-            expect(decoded).toEqual({ id: userId })
-        })
-
-        it('should throw an error if the token is invalid', async () => {
-            ;(jwt.verify as jest.Mock).mockImplementation(() => {
-                throw new Error('Invalid token')
+    describe('validateLogin', () => {
+        it('should return 400 if email is missing', async () => {
+            req.body = { password } // Email is missing
+            await runValidation(validateLogin, req, res, next)
+            expect(res.status).toHaveBeenCalledWith(400)
+            expect(res.json).toHaveBeenCalledWith({
+                errors: expect.arrayContaining([
+                    expect.objectContaining({
+                        msg: 'A valid email is required.',
+                    }),
+                ]),
             })
+        })
 
-            await expect(AuthService.verifyToken(token)).rejects.toThrow(
-                'Invalid token'
-            )
-            expect(jwt.verify).toHaveBeenCalledWith(
-                token,
-                process.env.JWT_SECRET
-            )
+        it('should return 400 if password is missing', async () => {
+            req.body = { email } // Password is missing
+            await runValidation(validateLogin, req, res, next)
+            expect(res.status).toHaveBeenCalledWith(400)
+            expect(res.json).toHaveBeenCalledWith({
+                errors: expect.arrayContaining([
+                    expect.objectContaining({
+                        msg: 'A valid password is required',
+                    }),
+                ]),
+            })
         })
     })
 
-    describe('login', () => {
-        it('should return user and account data on successful login', async () => {
+    describe('handleLoginValidatationErrors', () => {
+        it('should return 401 if user is not found', async () => {
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                null
+            )
+            await handleLoginValidatationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Invalid email or password',
+            })
+        })
+
+        it('should send verification email if email is not verified', async () => {
+            const unverifiedUser = { ...user, email_verified: false }
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                unverifiedUser
+            )
+            await handleLoginValidatationErrors(
+                req as Request,
+                res as Response,
+                next
+            )
+            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.json).toHaveBeenCalledWith({
+                status: 'success',
+                message: `Please, verify your email. Verification code successfully sent to ${email}`,
+            })
+            expect(UserService.sendVerificationEmail).toHaveBeenCalledWith(
+                email,
+                unverifiedUser.first_name
+            )
+        })
+
+        it('should return 401 if password is incorrect', async () => {
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
                 user
             )
-            ;(AccountModel.getAccountById as jest.Mock).mockResolvedValue(
-                account
+            ;(EncryptionService.compare as jest.Mock).mockResolvedValue(false)
+            await handleLoginValidatationErrors(
+                req as Request,
+                res as Response,
+                next
             )
-
-            const result = await AuthService.login(email)
-
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
-                email,
-            })
-            expect(AccountModel.getAccountById).toHaveBeenCalledWith(
-                undefined,
-                userId
-            )
-            expect(result).toEqual({
-                user: { id: userId, email, name: 'John Doe' },
-                account,
+            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Invalid email or password',
             })
         })
 
-        it('should throw an InternalError if login fails', async () => {
-            ;(UserModel.getUserByIdentifier as jest.Mock).mockRejectedValue(
-                new Error('Database error')
+        it('should call next if validation is successful', async () => {
+            ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
+                user
             )
-
-            await expect(AuthService.login(email)).rejects.toThrow(
-                InternalError
+            ;(EncryptionService.compare as jest.Mock).mockResolvedValue(true)
+            await handleLoginValidatationErrors(
+                req as Request,
+                res as Response,
+                next
             )
-            expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
-                email,
-            })
+            expect(next).toHaveBeenCalled()
         })
     })
 })

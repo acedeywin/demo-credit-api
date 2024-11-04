@@ -152,7 +152,7 @@ describe('UserService', () => {
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
                 userData
             )
-            ;(AccountModel.getAccountById as jest.Mock).mockResolvedValue(
+            ;(AccountModel.getAccountByUserId as jest.Mock).mockResolvedValue(
                 accountData
             )
             ;(omitValue as jest.Mock).mockReturnValue({
@@ -160,16 +160,12 @@ describe('UserService', () => {
                 password: undefined,
             })
 
-            const result = await UserService.getUserById(
-                userData.id as string,
-                accountData.account_number
-            )
+            const result = await UserService.getUserById(userData.id as string)
 
             expect(UserModel.getUserByIdentifier).toHaveBeenCalledWith({
                 id: userData.id,
             })
-            expect(AccountModel.getAccountById).toHaveBeenCalledWith(
-                accountData.account_number,
+            expect(AccountModel.getAccountByUserId).toHaveBeenCalledWith(
                 userData.id
             )
             expect(omitValue).toHaveBeenCalledWith(userData, ['password'])
@@ -184,9 +180,9 @@ describe('UserService', () => {
                 new Error('Database error')
             )
 
-            await expect(
-                UserService.getUserById('invalid_id', 'invalid_account_id')
-            ).rejects.toThrow(InternalError)
+            await expect(UserService.getUserById('invalid_id')).rejects.toThrow(
+                InternalError
+            )
         })
     })
 
