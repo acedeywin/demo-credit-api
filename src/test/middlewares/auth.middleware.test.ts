@@ -112,6 +112,7 @@ describe('Auth Middleware Tests', () => {
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue(
                 unverifiedUser
             )
+            const subject = 'Verification Code'
             await handleLoginValidatationErrors(
                 req as Request,
                 res as Response,
@@ -124,7 +125,8 @@ describe('Auth Middleware Tests', () => {
             })
             expect(UserService.sendVerificationEmail).toHaveBeenCalledWith(
                 email,
-                unverifiedUser.first_name
+                unverifiedUser.first_name,
+                subject
             )
         })
 

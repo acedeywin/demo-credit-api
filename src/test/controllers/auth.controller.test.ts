@@ -1,8 +1,24 @@
 import { Request, Response, NextFunction } from 'express'
 import AuthController from '../../controllers/auth.controller'
 import AuthService from '../../services/auth.service'
+import redisClient from '../../config/redis'
 
 jest.mock('../../services/auth.service')
+
+// Mock ioredis directly
+jest.mock('ioredis', () => {
+    return jest.fn().mockImplementation(() => ({
+        on: jest.fn(),
+        get: jest.fn().mockResolvedValue(null),
+        set: jest.fn().mockResolvedValue('OK'),
+        del: jest.fn().mockResolvedValue(1),
+        quit: jest.fn().mockResolvedValue('OK'),
+    }))
+})
+
+afterAll(async () => {
+    await redisClient.quit()
+})
 
 describe('AuthController', () => {
     let req: Partial<Request>

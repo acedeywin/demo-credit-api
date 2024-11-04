@@ -8,8 +8,10 @@ import { CustomRequest } from '../types/auth.types'
 import UserService from '../services/user.service'
 import AuthService from '../services/auth.service'
 
+export const validateEmail = () => body('email').isEmail().withMessage('A valid email is required.')
+
 export const validateLogin = [
-    body('email').isEmail().withMessage('A valid email is required.'),
+    validateEmail(),
     body('password')
         .isString()
         .notEmpty()
@@ -38,11 +40,12 @@ export const handleLoginValidatationErrors = async (
         }
 
         if (!user?.email_verified) {
+            const subject = 'Verification Code'
             res.status(401).json({
                 status: 'success',
                 message: `Please, verify your email. Verification code successfully sent to ${email}`,
             })
-            await UserService.sendVerificationEmail(email, user.first_name)
+            await UserService.sendVerificationEmail(email, user.first_name, subject)
             return
         }
 
@@ -61,6 +64,51 @@ export const handleLoginValidatationErrors = async (
         next(error)
     }
 }
+
+export const resetPasswordValidation = [
+    validateEmail(),
+
+    (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+    
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                res.status(400).json({ errors: errors.array() })
+                return
+            }
+    
+            next()
+        } catch (error) {
+            next(error)
+        }
+    }
+]
+
+export const handleChangePasswordvalidationError = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() })
+            return
+        }
+
+        next()
+
+        
+    } catch (error) {
+       next(error) 
+    }
+}
+
 
 export const authenticateJWT = async (
     req: CustomRequest,

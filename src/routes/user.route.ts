@@ -7,6 +7,7 @@ import {
     handleUserVerificationValidationErrors,
     validateUserVerification,
     validateFetchingUser,
+    validateUserData,
 } from '../middlewares/user.middleware'
 import { authenticateJWT } from '../middlewares/auth.middleware'
 
@@ -14,7 +15,7 @@ const userRoutes = Router()
 
 userRoutes.post(
     '/register',
-    [...validateUserRegistration, handleUserRegistrationValidationErrors],
+    [...validateUserData, ...validateUserRegistration, handleUserRegistrationValidationErrors],
     UserController.createUser
 )
 

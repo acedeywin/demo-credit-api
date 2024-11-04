@@ -47,6 +47,7 @@ describe('UserService', () => {
         phone_number: '04354492123',
         dob: new Date('2024-11-01T14:45:35.000Z'),
     }
+    const subject = 'Verification Code'
 
     beforeEach(() => {
         jest.clearAllMocks()
@@ -112,7 +113,8 @@ describe('UserService', () => {
 
             await UserService.sendVerificationEmail(
                 mockUser.email,
-                mockUser.first_name
+                mockUser.first_name,
+                subject
             )
 
             expect(generateOtp).toHaveBeenCalled()
@@ -135,7 +137,8 @@ describe('UserService', () => {
             await expect(
                 UserService.sendVerificationEmail(
                     mockUser.email,
-                    mockUser.first_name
+                    mockUser.first_name,
+                    subject
                 )
             ).rejects.toThrow(InternalError)
         })

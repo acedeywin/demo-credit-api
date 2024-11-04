@@ -30,8 +30,10 @@ class UserService {
                 user_id: user.id,
             }
 
+            const subject = 'Verification Code'
+
             await AccountModel.createAccount(account)
-            await this.sendVerificationEmail(user.email, user.first_name)
+            await this.sendVerificationEmail(user.email, user.first_name, subject)
         } catch (error) {
             console.error('Error creating user account:', error)
             throw new InternalError(
@@ -42,14 +44,13 @@ class UserService {
 
     static async sendVerificationEmail(
         email: string,
-        first_name: string
+        first_name: string,
+        subject: string
     ): Promise<void> {
         try {
             const code = await generateOtp()
-
-            const text = `Hi ${first_name},\n\n Your verification code is: ${code}.\n\n Do not share your code with anyone.`
-            const subject = 'Verification Code'
-
+            const text = `Hi ${first_name},\n\n Your ${subject.toLocaleLowerCase()} is: ${code}.\n\n Do not share your code with anyone.`
+            
             await CacheService.setCache(email, code)
             await sendEmail(email, subject, text)
         } catch (error) {

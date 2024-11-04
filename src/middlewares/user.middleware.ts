@@ -5,6 +5,29 @@ import AdjutorService from '../services/adjutor.service'
 import UserModel from '../models/user.model'
 import AccountModel from '../models/account.model'
 import CacheService from '../services/cache.service'
+import { validateEmail } from './auth.middleware'
+
+export const validateUserData = [
+        validateEmail(),
+        body('password')
+            .notEmpty()
+            .isStrongPassword({
+                minLength: 8,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 1,
+            })
+            .withMessage(
+                'Password should contain at least 1 uppercase character, 1 lowercase, 1 number, 1 symbol, and should be at least 8 characters long.'
+            ),
+        body('confirm_password')
+            .notEmpty()
+            .withMessage('Confirm password is required.')
+            .custom((value, { req }) => value === req.body.password)
+            .withMessage('Passwords do not match.'),
+    ]
+
 
 export const validateUserRegistration = [
     body('first_name')
@@ -15,24 +38,7 @@ export const validateUserRegistration = [
         .isString()
         .notEmpty()
         .withMessage('Last name is required.'),
-    body('email').isEmail().withMessage('A valid email is required.'),
-    body('password')
-        .notEmpty()
-        .isStrongPassword({
-            minLength: 8,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1,
-        })
-        .withMessage(
-            'Password should contain at least 1 uppercase character, 1 lowercase, 1 number, 1 symbol, and should be at least 8 characters long.'
-        ),
-    body('confirm_password')
-        .notEmpty()
-        .withMessage('Confirm password is required.')
-        .custom((value, { req }) => value === req.body.password)
-        .withMessage('Passwords do not match.'),
+    
     body('phone_number')
         .isMobilePhone('any')
         .withMessage('A valid phone number is required.'),
@@ -177,9 +183,9 @@ export const handleUserValidationErrors = async (
 }
 
 export const validateUserVerification = [
-    body('email').isString().notEmpty().withMessage('Email is required.'),
+    validateEmail(),
+    body('code').isString().notEmpty().withMessage('Code is required.')
 
-    body('code').isString().notEmpty().withMessage('Code is required.'),
 ]
 
 export const handleUserVerificationValidationErrors = async (
@@ -206,7 +212,7 @@ export const handleUserVerificationValidationErrors = async (
             return
         }
 
-        if (cache !== JSON.stringify(code)) {
+        if (cache !== code) {
             res.status(404).json({
                 message: 'Invalid Request',
                 status: 'success',

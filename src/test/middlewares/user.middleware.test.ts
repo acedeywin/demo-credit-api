@@ -5,6 +5,7 @@ import {
     validateFetchingUser,
     handleUserValidationErrors,
     handleUserVerificationValidationErrors,
+    validateUserData,
 } from '../../middlewares/user.middleware'
 import { verifyAge, compareUserInfo } from '../../utils/helpers'
 import AdjutorService from '../../services/adjutor.service'
@@ -90,7 +91,7 @@ describe('User Middleware Tests', () => {
         })
 
         it('should return 400 if any required field is missing', async () => {
-            req.body.email = ''
+            req.body.first_name = ''
             await runMiddlewares([
                 ...validateUserRegistration,
                 handleUserRegistrationValidationErrors,
@@ -99,7 +100,7 @@ describe('User Middleware Tests', () => {
             expect(res.json).toHaveBeenCalledWith({
                 errors: expect.arrayContaining([
                     expect.objectContaining({
-                        msg: 'A valid email is required.',
+                        msg: 'First name is required.',
                     }),
                 ]),
             })
@@ -108,7 +109,7 @@ describe('User Middleware Tests', () => {
         it('should return 400 if password does not meet requirements', async () => {
             req.body.password = 'weakpass'
             await runMiddlewares([
-                ...validateUserRegistration,
+                ...validateUserData,
                 handleUserRegistrationValidationErrors,
             ])
             expect(res.status).toHaveBeenCalledWith(400)
@@ -124,7 +125,7 @@ describe('User Middleware Tests', () => {
         it('should return 400 if password and confirm_password do not match', async () => {
             req.body.confirm_password = 'DifferentPassword!'
             await runMiddlewares([
-                ...validateUserRegistration,
+                ...validateUserData,
                 handleUserRegistrationValidationErrors,
             ])
             expect(res.status).toHaveBeenCalledWith(400)
@@ -233,7 +234,7 @@ describe('User Middleware Tests', () => {
         it('should call next if verification is successful', async () => {
             // Mock expected values for successful verification
             ;(CacheService.getCache as jest.Mock).mockResolvedValue(
-                JSON.stringify(code)
+                code
             )
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
                 id: '1',
@@ -313,7 +314,7 @@ describe('User Middleware Tests', () => {
         it('should call next if verification is successful', async () => {
             // Mock expected values for successful verification
             ;(CacheService.getCache as jest.Mock).mockResolvedValue(
-                JSON.stringify(code)
+                code
             )
             ;(UserModel.getUserByIdentifier as jest.Mock).mockResolvedValue({
                 id: '1',
