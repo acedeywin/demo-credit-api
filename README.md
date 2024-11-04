@@ -25,6 +25,7 @@ npm install
 
 Create a .env file with the following variables:
 
+```plaintext
 DB_HOST=your-database-host
 DB_USER=your-database-user
 DB_PASSWORD=your-database-password
@@ -43,6 +44,7 @@ EMAIL_SENDER=your-sender-title
 EMAIL_SERVICE=your-email-service (e.g: gmail)
 JWT_SECRET=your-jwt-secret
 JWT_EXPIRY=your-jwt-expiry-interval (e.g: 1h)
+```
 
 ### Running the Project
 
@@ -51,6 +53,7 @@ npm run start
 
 ## Folder Structure
 
+```plaintext
 ├── src
 │ ├── config # Configuration files (e.g., database config)
 │ ├── controllers # API controllers to handle HTTP requests
@@ -68,6 +71,8 @@ npm run start
 ├── package.json # Node dependencies and scripts
 ├── tsconfig.json # TypeScript configuration file
 └── README.md # Documentation for the project
+
+```
 
 ## Architecture and Design
 
