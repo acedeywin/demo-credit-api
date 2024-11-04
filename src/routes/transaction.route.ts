@@ -8,30 +8,31 @@ import {
     validateTransferTransaction,
 } from '../middlewares/transaction.middleware'
 import TransactionController from '../controllers/transaction.controller'
+import { authenticateJWT } from '../middlewares/auth.middleware'
 
 const transactionRoutes = Router()
 
 transactionRoutes.post(
     '/fund-account',
-    [...validateTransaction],
+    [authenticateJWT, ...validateTransaction],
     TransactionController.fundAccount
 )
 
 transactionRoutes.post(
     '/withdraw-fund',
-    [...validateTransaction, handleWithdrawalValidationErrors],
+    [authenticateJWT,...validateTransaction, handleWithdrawalValidationErrors],
     TransactionController.withdrawFund
 )
 
 transactionRoutes.post(
     '/transfer-fund',
-    [...validateTransferTransaction, handleTransferTransactionValidationErrors],
+    [authenticateJWT, ...validateTransferTransaction, handleTransferTransactionValidationErrors],
     TransactionController.transferFund
 )
 
 transactionRoutes.get(
     '/history',
-    [...validateTransactionHistory, handleTransactionHistoryValidationErrors],
+    [authenticateJWT,...validateTransactionHistory, handleTransactionHistoryValidationErrors],
     TransactionController.transactionHistory
 )
 

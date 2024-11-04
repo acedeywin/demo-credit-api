@@ -3,8 +3,8 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const PORT = process.env.PORT || 8250
+const APP_PORT = process.env.PORT || 8250
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
+app.listen(APP_PORT, () => {
+    console.log(`Server is running on PORT ${APP_PORT}`)
 })

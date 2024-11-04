@@ -4,3 +4,7 @@
 
 # Add .env file
 .env
+
+# For GCR deployment
+cloudbuild.yaml
+gcr-service-policy.yaml
