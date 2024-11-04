@@ -26,9 +26,15 @@ describe('AccountController Tests', () => {
     })
 
     it('should create a new account and return a success response', async () => {
-        (AccountService.createNewAccount as jest.Mock).mockResolvedValue(account_number)
+        ;(AccountService.createNewAccount as jest.Mock).mockResolvedValue(
+            account_number
+        )
 
-        await AccountController.createAccount(req as Request, res as Response, next)
+        await AccountController.createAccount(
+            req as Request,
+            res as Response,
+            next
+        )
 
         expect(AccountService.createNewAccount).toHaveBeenCalledWith(user_id)
         expect(res.status).toHaveBeenCalledWith(201)
@@ -43,7 +49,11 @@ describe('AccountController Tests', () => {
         const error = new InternalError('Account creation failed')
         ;(AccountService.createNewAccount as jest.Mock).mockRejectedValue(error)
 
-        await AccountController.createAccount(req as Request, res as Response, next)
+        await AccountController.createAccount(
+            req as Request,
+            res as Response,
+            next
+        )
 
         expect(AccountService.createNewAccount).toHaveBeenCalledWith(user_id)
         expect(next).toHaveBeenCalledWith(error)

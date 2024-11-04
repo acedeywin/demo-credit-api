@@ -9,7 +9,7 @@ import { authenticateJWT } from '../middlewares/auth.middleware'
 const accountRoutes = express.Router()
 
 accountRoutes.post(
-    '/create-account',
+    '/create-new-account',
     authenticateJWT,
     [...validateAccountCreation, handleAccountCreationValidationError],
     AccountController.createAccount

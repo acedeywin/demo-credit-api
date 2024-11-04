@@ -10,7 +10,7 @@ class TransactionService {
     constructor(account_number: string) {
         this.account_number = account_number
     }
-    static async updateAcount(
+    static async updateAccount(
         account_number: string,
         amount: number,
         type: PaymentType,
@@ -54,7 +54,7 @@ class TransactionService {
     ) {
         const transaction_type = PaymentType.CREDIT
 
-        await this.updateAcount(
+        await this.updateAccount(
             account_number,
             amount,
             transaction_type,
@@ -69,7 +69,7 @@ class TransactionService {
     ) {
         const transaction_type = PaymentType.DEBIT
 
-        await this.updateAcount(
+        await this.updateAccount(
             account_number,
             amount,
             transaction_type,
@@ -83,13 +83,13 @@ class TransactionService {
         amount: number,
         description?: string
     ) {
-        await this.updateAcount(
+        await this.updateAccount(
             sender_account,
             amount,
             PaymentType.DEBIT,
             description
         )
-        await this.updateAcount(
+        await this.updateAccount(
             receiver_account,
             amount,
             PaymentType.CREDIT,
