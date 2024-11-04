@@ -23,8 +23,8 @@ class TransactionService {
                 details?.user_id as string,
                 type
             )
-            const balance_after = await account.getBalance()
             await account.updateBalance(amount, type)
+            const balance_after = await account.getBalance()
 
             const transaction: TransactionDto = {
                 account_id: details?.id as string,

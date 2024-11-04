@@ -2,7 +2,7 @@ import { Router } from 'express'
 import UserController from '../controllers/user.controller'
 import {
     handleUserRegistrationValidationErrors,
-    handleFetchingUserValidationErrors,
+    handleUserValidationErrors,
     validateUserRegistration,
     handleUserVerificationValidationErrors,
     validateUserVerification,
@@ -26,11 +26,7 @@ userRoutes.put(
 
 userRoutes.get(
     '/',
-    [
-        authenticateJWT,
-        ...validateFetchingUser,
-        handleFetchingUserValidationErrors,
-    ],
+    [authenticateJWT, ...validateFetchingUser, handleUserValidationErrors],
     UserController.getUserById
 )
 

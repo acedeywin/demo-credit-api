@@ -62,9 +62,21 @@ export const handleUserRegistrationValidationErrors = async (
         const validUser = await AdjutorService.verifyNIN(nin)
         const validKarma = await AdjutorService.karmaCheck(nin)
 
-        const userExist = await UserModel.getUserByIdentifier({ email })
+        const emailExist = await UserModel.getUserByIdentifier({
+            email,
+            phone_number,
+        })
+        const phoneExist = await UserModel.getUserByIdentifier({ phone_number })
 
-        if (userExist) {
+        if (phoneExist?.phone_number === phone_number) {
+            res.status(403).json({
+                status: 'success',
+                message: 'Phone number already exist.',
+            })
+            return
+        }
+
+        if (emailExist) {
             res.status(403).json({
                 status: 'success',
                 message: 'You already have an account.',
@@ -121,14 +133,9 @@ export const validateFetchingUser = [
         .isString()
         .notEmpty()
         .withMessage('user_id query parameter is required.'),
-
-    query('account_id')
-        .isString()
-        .notEmpty()
-        .withMessage('account_id query parameter is required.'),
 ]
 
-export const handleFetchingUserValidationErrors = async (
+export const handleUserValidationErrors = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -140,7 +147,7 @@ export const handleFetchingUserValidationErrors = async (
             return
         }
 
-        const { user_id, account_id } = req.query
+        const { user_id } = req.query
 
         const user = await UserModel.getUserByIdentifier({
             id: user_id as string,
@@ -153,10 +160,7 @@ export const handleFetchingUserValidationErrors = async (
             })
             return
         }
-        const account = await AccountModel.getAccountById(
-            account_id as string,
-            user_id as string
-        )
+        const account = await AccountModel.getAccountByUserId(user_id as string)
 
         if (!account) {
             res.status(404).json({
@@ -202,7 +206,7 @@ export const handleUserVerificationValidationErrors = async (
             return
         }
 
-        if (cache !== code) {
+        if (cache !== JSON.stringify(code)) {
             res.status(404).json({
                 message: 'Invalid Request',
                 status: 'success',

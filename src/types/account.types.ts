@@ -11,6 +11,7 @@ export enum PaymentType {
 }
 
 export interface AccountDto {
+    id?: string
     account_number: string
     user_id?: string
     balance?: number

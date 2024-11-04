@@ -1,10 +1,12 @@
 import { body, validationResult } from 'express-validator'
 import { Request, Response, NextFunction } from 'express'
-import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
 
 import UserModel from '../models/user.model'
 import EncryptionService from '../services/encryption.service'
 import { CustomRequest } from '../types/auth.types'
+import UserService from '../services/user.service'
+import AuthService from '../services/auth.service'
 
 export const validateLogin = [
     body('email').isEmail().withMessage('A valid email is required.'),
@@ -35,6 +37,15 @@ export const handleLoginValidatationErrors = async (
             return
         }
 
+        if (!user?.email_verified) {
+            res.status(401).json({
+                status: 'success',
+                message: `Please, verify your email. Verification code successfully sent to ${email}`,
+            })
+            await UserService.sendVerificationEmail(email, user.first_name)
+            return
+        }
+
         // Validate password
         const isValidPassword = await EncryptionService.compare(
             password,
@@ -51,7 +62,7 @@ export const handleLoginValidatationErrors = async (
     }
 }
 
-export const authenticateJWT = (
+export const authenticateJWT = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
@@ -65,7 +76,7 @@ export const authenticateJWT = (
         }
 
         const token = authHeader.split(' ')[1]
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+        const decoded = await AuthService.verifyToken(token)
 
         req.user = decoded
         next()

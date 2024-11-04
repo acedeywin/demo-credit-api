@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 
 import UserModel from '../models/user.model'
-import AccountModel from '../models/account.model'
 import { UserDto } from '../types/user.types'
 import { omitValue } from '../utils/helpers'
 import { InternalError } from '../utils/error.handler'
@@ -20,14 +19,9 @@ class AuthService {
     static async login(email: string) {
         try {
             const user = await UserModel.getUserByIdentifier({ email })
-            const account = await AccountModel.getAccountById(
-                undefined,
-                user?.id
-            )
-
             const userData = omitValue(user as UserDto, ['password'])
 
-            return { user: userData, account }
+            return { user: userData }
         } catch (error) {
             console.error('Error with user login:', error)
             throw new InternalError('User login could not be completed')

@@ -1,38 +1,35 @@
 import db from '../config/db/connection'
-import { AccountDto } from '../types/account.types'
+import { AccountDto, PaymentType } from '../types/account.types'
 
 class AccountModel {
     static async createAccount(payload: AccountDto) {
         await db('accounts').insert(payload)
     }
 
-    static async getAccountById(
-        id?: string,
-        user_id?: string
-    ): Promise<AccountDto | null> {
-        const query = db('accounts')
-
-        if (user_id) {
-            query.where('user_id', user_id)
-        }
-
-        if (id && user_id) {
-            query.where({ id, user_id })
-        }
-
-        const account = await query.first()
+    static async getAccountByUserId(user_id?: string) {
+        const account = await db('accounts').select('*').where({ user_id })
         return account || null
     }
 
-    static async updateAccountById(
-        id: string,
-        payload: Partial<AccountDto>
+    static async getAccountDetils(
+        account_number: string
     ): Promise<AccountDto | null> {
-        const [account] = await db('accounts')
-            .update(payload)
-            .where({ id })
-            .returning('*')
+        const account = await db('accounts').where({ account_number }).first()
         return account || null
+    }
+
+    static async updateBalance(
+        account_number: string,
+        amount: number,
+        type: PaymentType
+    ) {
+        return type === PaymentType.CREDIT
+            ? await db('accounts')
+                  .where({ account_number })
+                  .increment('balance', amount)
+            : await db('accounts')
+                  .where({ account_number })
+                  .decrement('balance', amount)
     }
 
     static async updateAccountByIdOrUserId(

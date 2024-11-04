@@ -16,7 +16,7 @@ class UserController {
 
             res.status(201).json({
                 status: 'success',
-                message: 'User account created successfully',
+                message: `Account successfully created. Verification code sent to ${req.body.email}`,
             })
             return
         } catch (error) {
@@ -26,12 +26,9 @@ class UserController {
 
     static async getUserById(req: Request, res: Response, next: NextFunction) {
         try {
-            const { user_id, account_id } = req.query
+            const { user_id } = req.query
 
-            const user = await UserService.getUserById(
-                user_id as string,
-                account_id as string
-            )
+            const user = await UserService.getUserById(user_id as string)
 
             res.status(201).json({
                 status: 'success',
@@ -52,7 +49,7 @@ class UserController {
 
             res.status(201).json({
                 status: 'success',
-                message: 'User account verified successfully',
+                message: 'Account successfully verified. Proceed to login.',
             })
             return
         } catch (error) {

@@ -31,7 +31,6 @@ class UserService {
             }
 
             await AccountModel.createAccount(account)
-
             await this.sendVerificationEmail(user.email, user.first_name)
         } catch (error) {
             console.error('Error creating user account:', error)
@@ -59,11 +58,10 @@ class UserService {
         }
     }
 
-    static async getUserById(id: string, account_id: string) {
+    static async getUserById(id: string) {
         try {
             const user = await UserModel.getUserByIdentifier({ id })
-            const account = await AccountModel.getAccountById(
-                account_id,
+            const account = await AccountModel.getAccountByUserId(
                 user?.id as string
             )
 

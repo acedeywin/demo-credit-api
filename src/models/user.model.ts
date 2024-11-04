@@ -9,14 +9,16 @@ class UserModel {
     public static async getUserByIdentifier(identifier: {
         email?: string
         id?: string
+        phone_number?: string
     }): Promise<UserDto | null> {
-        const { email, id } = identifier
+        const { email, id, phone_number } = identifier
 
         // Build the query based on provided identifier
         const user = await db('users')
             .where((builder) => {
                 if (email) builder.where('email', email)
                 if (id) builder.where('id', id)
+                if (phone_number) builder.where('phone_number', phone_number)
             })
             .first()
 

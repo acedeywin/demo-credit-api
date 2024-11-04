@@ -2,6 +2,8 @@ import * as otpGenerator from 'otp-generator'
 
 import db from '../config/db/connection'
 import { InternalError } from './error.handler'
+import UserModel from '../models/user.model'
+import { PaymentType } from '../types/account.types'
 
 export const verifyAge = async (dob: Date) => {
     const enteredDate = new Date(dob)
@@ -27,19 +29,32 @@ const generateAccountNumber = async (): Promise<string> => {
     return timestamp + randomDigits // Concatenate for a 10-digit account number
 }
 
-export const generateUniqueAccountNumber = async (): Promise<string> => {
-    let accountNumber
+const generateUniqueId = async (
+    tableName: string,
+    columnName: string,
+    prefix: string = ''
+): Promise<string> => {
+    let uniqueId = ''
     let isUnique = false
 
     while (!isUnique) {
-        accountNumber = await generateAccountNumber() // Use any of the generation functions above
-        const existingAccount = await db('accounts')
-            .where({ account_number: accountNumber })
+        const digit = await generateAccountNumber()
+        uniqueId = prefix ? `${prefix}-${digit}`.toUpperCase() : digit
+
+        const existingRecord = await db(tableName)
+            .where({ [columnName]: uniqueId })
             .first()
-        isUnique = !existingAccount // Only exit loop if no existing account is found
+
+        isUnique = !existingRecord // Only exit loop if no existing record is found
     }
 
-    return accountNumber as string
+    return uniqueId
+}
+
+export const generateUniqueAccountNumber = async (): Promise<string> => {
+    const accountNumber = await generateUniqueId('accounts', 'account_number')
+
+    return accountNumber
 }
 
 export const generateOtp = async () => {
@@ -65,4 +80,37 @@ export const omitValue = <T extends object, K extends keyof T>(
         delete clone[key]
     })
     return clone
+}
+
+export const maskNumber = (input: string): string =>
+    input.slice(0, 7).replace(/./g, 'X') + input.slice(-3)
+
+export const formatDate = (date: Date): string => {
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = date.toLocaleString('default', { month: 'short' })
+    const year = date.getFullYear()
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+
+    return `${day}-${month}-${year} ${hours}:${minutes}`
+}
+
+export const generateReferenceId = async (
+    id: string,
+    type: PaymentType
+): Promise<string> => {
+    const user = await UserModel.getUserByIdentifier({ id })
+    const prefix = `${user?.first_name[0]}${user?.last_name[0]}${type[0]}`
+
+    const referenceId = await generateUniqueId(
+        'transactions',
+        'reference_id',
+        prefix
+    )
+
+    return referenceId
+}
+
+export const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-US')
 }
