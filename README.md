@@ -212,11 +212,6 @@ The project follows a modular MVC structure. The main components are:
 
 -   **Method**: POST
 -   **Endpoint**: `/api/v1/auth/logout`
-
-    ```
-
-    ```
-
 -   **Response**:
 
 ```json
@@ -224,6 +219,47 @@ The project follows a modular MVC structure. The main components are:
     "status": "success",
     "message": "'Logged out successfully."
 }
+```
+
+### Reset Password
+
+-   **Method**: POST
+-   **Endpoint**: `/api/v1/auth/reset-password`
+-   **Request Body**:
+    ```json
+    {
+        "email": "user@gmail.com",
+    }
+    ```
+-   **Response**:
+
+```json
+{
+    "status": "success",
+    "message": "A password reset code will been sent to user@gmail.com if it exist.",
+    }
+```
+
+### Change Password
+
+-   **Method**: PUT
+-   **Endpoint**: `/api/v1/auth/change-password`
+-   **Request Body**:
+    ```json
+    {
+        "email": "user@gmail.com",
+        "password": "De#$r560fkdewWQ",
+        "confirm_password": "De#$r560fkdewWQ",
+        "code": "519735"
+    }
+    ```
+-   **Response**:
+
+```json
+{
+    "status": "success",
+    "message": "Password reset was successful.",
+    }
 ```
 
 ## Account
