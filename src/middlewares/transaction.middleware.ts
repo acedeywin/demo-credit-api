@@ -212,14 +212,6 @@ export const handleTransferTransactionValidationErrors = async (
             return
         }
 
-        if (Number(amount) > Number(balance)) {
-            res.status(403).json({
-                status: 'error', // Indicate an error
-                message: 'Insufficient funds.',
-            })
-            return
-        }
-
         if (!receiver) {
             res.status(403).json({
                 status: 'success',
@@ -232,14 +224,6 @@ export const handleTransferTransactionValidationErrors = async (
             res.status(403).json({
                 status: 'success',
                 message: 'Amount must be greater than zero.',
-            })
-            return
-        }
-
-        if (Number(amount) > Number(sender?.balance)) {
-            res.status(403).json({
-                status: 'success',
-                message: 'Insufficient funds.',
             })
             return
         }
