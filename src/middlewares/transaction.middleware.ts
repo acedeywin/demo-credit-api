@@ -94,6 +94,7 @@ export const handleWithdrawalValidationErrors = async (
         }
 
         if (Number(amount) > Number(account?.balance)) {
+            console.log('amount is here', amount, account?.balance)
             res.status(403).json({
                 status: 'success',
                 message: 'Insufficient funds.',
@@ -178,6 +179,15 @@ export const handleTransferTransactionValidationErrors = async (
             })
             return
         }
+
+        if (Number(amount) > Number(balance)) {
+            res.status(403).json({
+                status: 'error', // Indicate an error
+                message: 'Insufficient funds.',
+            });
+            return;
+        }
+        
 
         if (!receiver) {
             res.status(403).json({

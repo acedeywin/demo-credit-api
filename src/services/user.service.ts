@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
 import AccountModel from '../models/account.model'
 import UserModel from '../models/user.model'
 import { AccountDto, AccountStatus } from '../types/account.types'
@@ -44,7 +43,6 @@ class UserService {
                 user.nin_verified = VerificationStatus.VERIFIED;
                 const password = await EncryptionService.hash(user.password);
                 user.password = password;
-                user.id = uuidv4();
 
                 const created_user = await UserModel.createUser(user, trx);
 
