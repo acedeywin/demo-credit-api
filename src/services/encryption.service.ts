@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt'
 class EncryptionService {
     /**
      * Compares a plain password with a hashed password to check if they match.
-     * 
+     *
      * @param {string} plainPassword - The plain text password to compare.
      * @param {string} hashedPassword - The hashed password to compare against.
      * @returns {Promise<boolean>} - True if the passwords match, false otherwise.
@@ -20,7 +20,7 @@ class EncryptionService {
 
     /**
      * Hashes a plain password using bcrypt with a generated salt.
-     * 
+     *
      * @param {string} plain - The plain text password to hash.
      * @returns {Promise<string>} - The hashed password.
      */

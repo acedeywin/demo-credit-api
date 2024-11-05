@@ -5,7 +5,7 @@ dotenv.config()
 
 /**
  * Sends an email with the specified recipient, subject, and message text.
- * 
+ *
  * @param {string} to - The recipient's email address.
  * @param {string} subject - The subject of the email.
  * @param {string} text - The body text of the email.

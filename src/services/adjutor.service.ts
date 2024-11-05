@@ -9,7 +9,7 @@ dotenv.config()
 class AdjutorService {
     /**
      * Fetches data from the Adjutor API based on the specified path.
-     * 
+     *
      * @param {string} path - The API endpoint path to fetch data from.
      * @returns {Promise<Response>} - The API response.
      * @throws {InternalError} - If the data fetch operation fails.
@@ -40,7 +40,7 @@ class AdjutorService {
 
     /**
      * Checks the karma status of a user based on their NIN.
-     * 
+     *
      * @param {string} nin - The National Identification Number of the user.
      * @returns {Promise<boolean>} - True if the karma check is successful, otherwise false.
      * @throws {InternalError} - If the karma check operation fails.
@@ -58,13 +58,15 @@ class AdjutorService {
 
     /**
      * Verifies the NIN (National Identification Number) of a user and retrieves user details.
-     * 
+     *
      * @param {string} nin - The National Identification Number to verify.
      * @returns {Promise<{ first_name: string; last_name: string; mobile: string }>} - The user's verified information including first name, last name, and mobile number.
      * @throws {ForbiddenError} - If the NIN is not valid.
      * @throws {InternalError} - If the NIN verification operation fails.
      */
-    static async verifyNIN(nin: string): Promise<{ first_name: string; last_name: string; mobile: string }> {
+    static async verifyNIN(
+        nin: string
+    ): Promise<{ first_name: string; last_name: string; mobile: string }> {
         try {
             const path = `nin/${nin}`
             const response = await this.fetchData(path)

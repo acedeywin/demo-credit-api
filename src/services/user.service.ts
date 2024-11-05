@@ -18,8 +18,8 @@ import EncryptionService from './encryption.service'
  */
 class UserService {
     /**
-     * Creates a new user, hashes the password, generates a unique ID and account number, and sends a verification email.
-     * 
+     * Creates a new user, hashes the password, generates a unique ID and account number, and sends a verification and welcome email.
+     *
      * @param {UserDto} user - The user details to be created.
      * @returns {Promise<void>}
      * @throws {InternalError} - If user creation fails.
@@ -41,6 +41,8 @@ class UserService {
             }
 
             const subject = 'Verification Code'
+            const welcome_subject = 'Account Created Successfully'
+            const welcome_message = `Hi ${user.first_name},\n\n Welcome to Demo Credit! Your account was successfully created.\n\n Account Number: ${account_number}`
 
             await AccountModel.createAccount(account)
             await this.sendVerificationEmail(
@@ -48,6 +50,7 @@ class UserService {
                 user.first_name,
                 subject
             )
+            await sendEmail(user.email, welcome_subject, welcome_message)
         } catch (error) {
             console.error('Error creating user account:', error)
             throw new InternalError(
@@ -58,7 +61,7 @@ class UserService {
 
     /**
      * Sends a verification email with a one-time password (OTP) to the specified user.
-     * 
+     *
      * @param {string} email - The recipient's email address.
      * @param {string} first_name - The recipient's first name.
      * @param {string} subject - The subject of the email.
@@ -84,12 +87,14 @@ class UserService {
 
     /**
      * Retrieves a user by their ID and associated account information, excluding the password.
-     * 
+     *
      * @param {string} id - The unique user ID.
      * @returns {Promise<{ user: Partial<UserDto>; account: AccountDto | null }>} - The user's details and associated account.
      * @throws {InternalError} - If fetching the user fails.
      */
-    static async getUserById(id: string): Promise<{ user: Partial<UserDto>; account: AccountDto[] | null }> {
+    static async getUserById(
+        id: string
+    ): Promise<{ user: Partial<UserDto>; account: AccountDto[] | null }> {
         try {
             const user = await UserModel.getUserByIdentifier({ id })
             const account = await AccountModel.getAccountByUserId(
@@ -107,7 +112,7 @@ class UserService {
 
     /**
      * Verifies a user's account by setting email verification status to true and activating the user's account.
-     * 
+     *
      * @param {string} email - The email address of the user to verify.
      * @returns {Promise<void>}
      * @throws {InternalError} - If user verification fails.

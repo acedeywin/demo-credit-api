@@ -22,6 +22,10 @@ export const validateLogin = [
         .withMessage('A valid password is required'),
 ]
 
+export const validateCode = [
+    body('code').isString().notEmpty().withMessage('Code is required.'),
+]
+
 /**
  * Handles validation errors for login.
  * If validation fails or user is invalid, sends an appropriate response.
@@ -159,6 +163,14 @@ export const authenticateJWT = async (
         const decoded = await AuthService.verifyToken(token)
 
         req.user = decoded
+
+        if (req.query.user_id !== req.user.id) {
+            res.status(401).json({
+                message: 'Unauthorised request.',
+            })
+            return
+        }
+
         next()
     } catch (error) {
         if (error instanceof TokenExpiredError) {

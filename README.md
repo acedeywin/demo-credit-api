@@ -294,7 +294,7 @@ The project follows a modular MVC structure. The main components are:
 ### Fund Account
 
 -   **Method**: POST
--   **Endpoint**: `/api/v1/transaction/fund-account`
+-   **Endpoint**: `/api/v1/transaction/fund-account?user_id=209cf65bxxxx`
 -   **Authorization**: Bearer `<token>`
 -   **Request Body**:
     ```json
@@ -316,7 +316,7 @@ The project follows a modular MVC structure. The main components are:
 ### Withdraw Fund
 
 -   **Method**: POST
--   **Endpoint**: `/api/v1/transaction/withdraw-fund`
+-   **Endpoint**: `/api/v1/transaction/withdraw-fund?user_id=209cf65bxxxx`
 -   **Authorization**: Bearer `<token>`
 -   **Request Body**:
     ```json
@@ -338,7 +338,7 @@ The project follows a modular MVC structure. The main components are:
 ### Transfer Fund
 
 -   **Method**: POST
--   **Endpoint**: `/api/v1/transaction/transfer-fund`
+-   **Endpoint**: `/api/v1/transaction/transfer-fund?user_id=209cf65bxxxx`
 -   **Authorization**: Bearer `<token>`
 -   **Request Body**:
     ```json
@@ -361,12 +361,8 @@ The project follows a modular MVC structure. The main components are:
 ### Transaction History
 
 -   **Method**: GET
--   **Endpoint**: `/api/v1/transaction/history?account_number=2780799928`
+-   **Endpoint**: `/api/v1/transaction/history?user_id=209cf65bxxxx&account_number=2780799928`
 -   **Authorization**: Bearer `<token>`
-
-    ```
-
-    ```
 
 -   **Response**:
 

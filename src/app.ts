@@ -1,5 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express'
-import timeout from 'connect-timeout'
+import express, { Request, Response } from 'express'
+// import timeout from 'connect-timeout'
 
 import routes from './routes'
 
@@ -7,24 +7,24 @@ const app = express()
 app.use(express.json())
 
 // Middleware to set timeout for all requests
-app.use(timeout('20s')) // Set timeout to 20 seconds
+// app.use(timeout('20s')) // Set timeout to 20 seconds
 
 // Middleware to handle timed-out requests
-app.use((req: Request, res: Response, next: NextFunction) => {
-    if (!req.timedout) next() // If request did not time out, proceed
-})
+// app.use((req: Request, res: Response, next: NextFunction) => {
+//     if (!req.timedout) next() // If request did not time out, proceed
+// })
 
-// Error handler for timed-out requests
-app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
-    if (err && req.timedout) {
-        res.status(408).json({
-            message: 'Request timed out. Check your network connection.',
-        })
-        return
-    } else {
-        next(err)
-    }
-})
+// // Error handler for timed-out requests
+// app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+//     if (err && req.timedout) {
+//         res.status(408).json({
+//             message: 'Request timed out. Check your network connection.',
+//         })
+//         return
+//     } else {
+//         next(err)
+//     }
+// })
 
 // Software accessibility test
 app.get('/', (req: Request, res: Response) => {

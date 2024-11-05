@@ -82,7 +82,9 @@ describe('sendEmail', () => {
 
         await sendEmail(to, subject, text)
 
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Email sent: 250 OK to ${to}`)
+        expect(consoleLogSpy).toHaveBeenCalledWith(
+            `Email sent: 250 OK to ${to}`
+        )
 
         consoleLogSpy.mockRestore()
     })

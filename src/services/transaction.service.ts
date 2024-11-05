@@ -14,7 +14,7 @@ class TransactionService {
 
     /**
      * Initializes an instance of TransactionService for a specific account number.
-     * 
+     *
      * @param {string} account_number - The account number for this instance of the service.
      */
     constructor(account_number: string) {
@@ -23,7 +23,7 @@ class TransactionService {
 
     /**
      * Updates an account balance by creating a transaction, adjusting the balance, and sending a notification.
-     * 
+     *
      * @param {string} account_number - The account number to update.
      * @param {number} amount - The amount to credit or debit.
      * @param {PaymentType} type - The type of transaction (CREDIT or DEBIT).
@@ -74,7 +74,7 @@ class TransactionService {
 
     /**
      * Funds an account by crediting a specified amount.
-     * 
+     *
      * @param {string} account_number - The account number to fund.
      * @param {number} amount - The amount to credit to the account.
      * @param {string} [description] - An optional description of the transaction.
@@ -97,7 +97,7 @@ class TransactionService {
 
     /**
      * Withdraws funds from an account by debiting a specified amount.
-     * 
+     *
      * @param {string} account_number - The account number to debit.
      * @param {number} amount - The amount to debit from the account.
      * @param {string} [description] - An optional description of the transaction.
@@ -120,7 +120,7 @@ class TransactionService {
 
     /**
      * Transfers funds between two accounts by debiting the sender and crediting the receiver.
-     * 
+     *
      * @param {string} sender_account - The account number of the sender.
      * @param {string} receiver_account - The account number of the receiver.
      * @param {number} amount - The amount to transfer.
@@ -133,28 +133,35 @@ class TransactionService {
         amount: number,
         description?: string
     ): Promise<void> {
-        await this.updateAccount(
-            sender_account,
-            amount,
-            PaymentType.DEBIT,
-            description
-        )
-        await this.updateAccount(
-            receiver_account,
-            amount,
-            PaymentType.CREDIT,
-            description
-        )
+        try {
+            await this.updateAccount(
+                sender_account,
+                amount,
+                PaymentType.DEBIT,
+                description
+            )
+            await this.updateAccount(
+                receiver_account,
+                amount,
+                PaymentType.CREDIT,
+                description
+            )
+        } catch (error) {
+            throw new InternalError('Fund transfer failed:', error)
+        }
     }
 
     /**
      * Retrieves the transaction history for a specified account.
-     * 
+     *
      * @param {string} account_number - The account number to retrieve transaction history for.
      * @returns {Promise<{ account: AccountDto | null; transactions: TransactionDto[] | null }>} - An object containing account details and transaction history.
      * @throws {InternalError} - If fetching transactions fails.
      */
-    static async transactionHistory(account_number: string): Promise<{ account: AccountDto | null; transactions: TransactionDto[] | null }> {
+    static async transactionHistory(account_number: string): Promise<{
+        account: AccountDto | null
+        transactions: TransactionDto[] | null
+    }> {
         try {
             const account = new AccountService(account_number)
             const details = await account.accountDetails()

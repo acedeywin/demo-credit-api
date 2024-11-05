@@ -9,7 +9,7 @@ export class ApplicationError extends Error {
 
     /**
      * Constructs an ApplicationError.
-     * 
+     *
      * @param {number} statusCode - The HTTP status code associated with the error.
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `Error` constructor.
@@ -28,7 +28,7 @@ export class ApplicationError extends Error {
 export class BadRequestError extends ApplicationError {
     /**
      * Constructs a BadRequestError.
-     * 
+     *
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `ApplicationError` constructor.
      */
@@ -44,7 +44,7 @@ export class BadRequestError extends ApplicationError {
 export class UnauthorizedError extends ApplicationError {
     /**
      * Constructs an UnauthorizedError.
-     * 
+     *
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `ApplicationError` constructor.
      */
@@ -60,7 +60,7 @@ export class UnauthorizedError extends ApplicationError {
 export class ForbiddenError extends ApplicationError {
     /**
      * Constructs a ForbiddenError.
-     * 
+     *
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `ApplicationError` constructor.
      */
@@ -76,7 +76,7 @@ export class ForbiddenError extends ApplicationError {
 export class NotFoundError extends ApplicationError {
     /**
      * Constructs a NotFoundError.
-     * 
+     *
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `ApplicationError` constructor.
      */
@@ -92,7 +92,7 @@ export class NotFoundError extends ApplicationError {
 export class InternalError extends ApplicationError {
     /**
      * Constructs an InternalError.
-     * 
+     *
      * @param {string} message - A descriptive error message.
      * @param {...any} args - Additional arguments to be passed to the `ApplicationError` constructor.
      */

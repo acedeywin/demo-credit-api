@@ -5,13 +5,12 @@ import AdjutorService from '../services/adjutor.service'
 import UserModel from '../models/user.model'
 import AccountModel from '../models/account.model'
 import CacheService from '../services/cache.service'
-import { validateEmail } from './auth.middleware'
 
 /**
  * Validation middleware for user data, ensuring valid email, password strength, and matching passwords.
  */
 export const validateUserData = [
-    validateEmail(),
+    body('email').isEmail().withMessage('A valid email is required.'),
     body('password')
         .notEmpty()
         .isStrongPassword({
@@ -210,7 +209,7 @@ export const handleUserValidationErrors = async (
  * Validation middleware for user verification, ensuring valid email and verification code.
  */
 export const validateUserVerification = [
-    validateEmail(),
+    body('email').isEmail().withMessage('A valid email is required.'),
     body('code').isString().notEmpty().withMessage('Code is required.'),
 ]
 

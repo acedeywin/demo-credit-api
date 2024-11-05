@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
     handleTransactionHistoryValidationErrors,
     handleTransferTransactionValidationErrors,
+    handleValidateTransactionError,
     handleWithdrawalValidationErrors,
     validateTransaction,
     validateTransactionHistory,
@@ -14,13 +15,18 @@ const transactionRoutes = Router()
 
 transactionRoutes.post(
     '/fund-account',
-    [authenticateJWT, ...validateTransaction],
+    [authenticateJWT, ...validateTransaction, handleValidateTransactionError],
     TransactionController.fundAccount
 )
 
 transactionRoutes.post(
     '/withdraw-fund',
-    [authenticateJWT, ...validateTransaction, handleWithdrawalValidationErrors],
+    [
+        authenticateJWT,
+        ...validateTransaction,
+        handleValidateTransactionError,
+        handleWithdrawalValidationErrors,
+    ],
     TransactionController.withdrawFund
 )
 

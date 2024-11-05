@@ -18,39 +18,66 @@ export const validateTransaction = [
         .isString()
         .optional()
         .withMessage('Description should be a string.'),
-
-    /**
-     * Middleware to handle validation errors and additional checks for transaction.
-     * Checks if amount is greater than zero; otherwise, responds with an error message.
-     *
-     * @param {Request} req - The request object containing transaction details in the body.
-     * @param {Response} res - The response object used to send validation error messages or proceed.
-     * @param {NextFunction} next - The next middleware function in the stack.
-     */
-    (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const errors = validationResult(req)
-            if (!errors.isEmpty()) {
-                res.status(400).json({ errors: errors.array() })
-                return
-            }
-
-            const { amount } = req.body
-
-            if (amount <= 0) {
-                res.status(403).json({
-                    status: 'success',
-                    message: 'Amount must be greater than zero.',
-                })
-                return
-            }
-
-            next()
-        } catch (error) {
-            next(error)
-        }
-    },
 ]
+/**
+ * Middleware to handle validation errors and additional checks for transaction.
+ * Checks if amount is greater than zero; otherwise, responds with an error message.
+ *
+ * @param {Request} req - The request object containing transaction details in the body.
+ * @param {Response} res - The response object used to send validation error messages or proceed.
+ * @param {NextFunction} next - The next middleware function in the stack.
+ */
+export const handleValidateTransactionError = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() })
+            return
+        }
+
+        const { amount, account_number } = req.body
+
+        const account = await AccountModel.getAccountDetils(account_number)
+
+        if (!account) {
+            res.status(403).json({
+                status: 'success',
+                message: 'Account does not exist.',
+            })
+            return
+        }
+
+        if (amount <= 0) {
+            res.status(403).json({
+                status: 'success',
+                message: 'Amount must be greater than zero.',
+            })
+            return
+        }
+
+        console.log(
+            'req.query.user_id !== account.user_id',
+            req.query.user_id,
+            account.user_id
+        )
+
+        if (req.query.user_id !== account.user_id) {
+            res.status(403).json({
+                status: 'success',
+                message: 'You are not authorised to perform this action.',
+            })
+            return
+        }
+
+        next()
+    } catch (error) {
+        next(error)
+    }
+}
 
 /**
  * Handles validation errors for withdrawal transactions, checking account details and balance.
@@ -155,6 +182,14 @@ export const handleTransferTransactionValidationErrors = async (
             res.status(403).json({
                 status: 'success',
                 message: "Sender's account does not exist.",
+            })
+            return
+        }
+
+        if (req.query.user_id !== sender.user_id) {
+            res.status(403).json({
+                status: 'success',
+                message: 'You are not authorised to perform this action.',
             })
             return
         }

@@ -4,10 +4,10 @@ import {
     resetPasswordValidation,
     handleLoginValidatationErrors,
     validateLogin,
+    validateCode,
 } from '../middlewares/auth.middleware'
 import {
     handleUserVerificationValidationErrors,
-    validateUserData,
     validateUserVerification,
 } from '../middlewares/user.middleware'
 
@@ -30,7 +30,7 @@ authRoutes.post(
 authRoutes.put(
     '/change-password',
     [
-        ...validateUserData,
+        ...validateCode,
         ...validateUserVerification,
         handleUserVerificationValidationErrors,
     ],

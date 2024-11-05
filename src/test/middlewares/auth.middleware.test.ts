@@ -41,7 +41,7 @@ describe('Auth Middleware Tests', () => {
     const email = 'user@example.com'
     const password = 'password123'
     const user = {
-        id: '1',
+        id: '12',
         email,
         password: 'hashedPassword',
         email_verified: true,
@@ -55,6 +55,9 @@ describe('Auth Middleware Tests', () => {
         req = {
             body: { email, password },
             headers: { authorization: `Bearer ${token}` },
+            query: {
+                user_id: '123',
+            },
         }
         res = {
             status: jest.fn().mockReturnThis(),
@@ -190,13 +193,32 @@ describe('Auth Middleware Tests', () => {
             expect(res.json).toHaveBeenCalledWith({ message: 'Invalid token' })
         })
 
-        it('should call next and set req.user if token is valid', async () => {
-            ;(AuthService.verifyToken as jest.Mock).mockResolvedValue(
-                decodedUser
-            )
+        it('should return 401 if user_id in query does not match decoded user id', async () => {
+            decodedUser.id = '456' // Mock decoded token with a different ID
+
+            // Mock the verifyToken method to return the decoded token
+            AuthService.verifyToken = jest.fn().mockResolvedValue(decodedUser)
+
             await authenticateJWT(req as Request, res as Response, next)
-            expect(req.user).toEqual(decodedUser)
+
+            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Unauthorised request.',
+            })
+            expect(next).not.toHaveBeenCalled()
+        })
+
+        it('should call next if user_id in query matches decoded user id', async () => {
+            decodedUser.id = '123'
+
+            // Mock the verifyToken method to return the decoded token
+            AuthService.verifyToken = jest.fn().mockResolvedValue(decodedUser)
+
+            await authenticateJWT(req as Request, res as Response, next)
+
             expect(next).toHaveBeenCalled()
+            expect(res.status).not.toHaveBeenCalled()
+            expect(res.json).not.toHaveBeenCalled()
         })
 
         it('should return 500 for unexpected errors', async () => {
