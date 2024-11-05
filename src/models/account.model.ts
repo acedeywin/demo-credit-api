@@ -11,8 +11,18 @@ class AccountModel {
      *
      * @param {AccountDto} payload - The account details to be inserted into the database.
      */
-    static async createAccount(payload: AccountDto) {
-        await db('accounts').insert(payload)
+    static async createAccount(
+        payload: AccountDto,
+        trx: Knex.Transaction
+    ): Promise<AccountDto> {
+        await trx('accounts').insert(payload)
+
+        const account = await trx('accounts')
+            .where({ account_number: payload.account_number })
+            .select('*')
+            .first()
+
+        return account
     }
 
     /**

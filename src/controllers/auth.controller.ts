@@ -96,6 +96,7 @@ class AuthController {
                 status: 'success',
                 message: 'Password reset was successful.',
             })
+            return
         } catch (error) {
             next(error)
         }
