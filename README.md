@@ -125,7 +125,8 @@ The project follows a modular MVC structure. The main components are:
         "confirm_password": "Awe@#254redtgf5",
         "phone_number": "08543409211",
         "dob": "12-09-1997",
-        "nin": "36900362314"
+        "nin": "36900362314",
+        "initial_deposit": "4500", //optional     
     }
     ```
 -   **Response**:
@@ -133,7 +134,21 @@ The project follows a modular MVC structure. The main components are:
 ```json
 {
     "status": "success",
-    "message": "Account successfully created. Verification code sent to user@gmail.com"
+    "message": "Account successfully created. Verification code sent to user@gmail.com",
+    "data": {
+        "user": {
+            "first_name": "Tom",
+            "last_name": "Dede",
+            "email": "user@gmail.com",
+            "phone_number": "08543409211",
+            "email_verified": false,
+            "nin_verified": "verified"
+        },
+        "account": {
+            "account_number": "5112293715",
+            "balance": "4500.00"
+        }
+    }
 }
 ```
 
@@ -163,16 +178,47 @@ The project follows a modular MVC structure. The main components are:
 -   **Endpoint**: `/api/v1/user?user_id=209cf65bxxxx`
 -   **Authorization**: Bearer `<token>`
 
-    ```
-
-    ```
-
 -   **Response**:
 
 ```json
 {
     "status": "success",
-    "message": "'User account fetched successfully."
+    "message": "'User account fetched successfully.",
+    "message": "User account fetched successfully.",
+    "data": {
+        "user": {
+            "id": "209cf65b-df32-42c6-b8e4-e80f02886753",
+            "first_name": "Tom",
+            "last_name": "Hardy",
+            "dob": "12-09-1997",
+            "email": "user@gmail.com",
+            "phone_number": "08054356461",
+            "email_verified": 1,
+            "nin_verified": "verified",
+            "created_at": "2024-11-02T22:14:58.000Z",
+            "updated_at": "2024-11-02T22:14:58.000Z"
+        },
+        "account": [
+            {
+                "id": "3d7ca163-9a83-11ef-b920-0653f87c7c59",
+                "user_id": "209cf65b-df32-42c6-b8e4-e80f02886753",
+                "account_number": "2780799928",
+                "balance": "66000.00",
+                "status": "active",
+                "created_at": "2024-11-04T08:03:13.000Z",
+                "updated_at": "2024-11-04T08:03:13.000Z"
+            },
+            {
+                "id": "e5ae1514-9967-11ef-b920-0653f87c7c59",
+                "user_id": "209cf65b-df32-42c6-b8e4-e80f02886753",
+                "account_number": "7704292343",
+                "balance": "223300.56",
+                "status": "active",
+                "created_at": "2024-11-02T22:14:58.000Z",
+                "updated_at": "2024-11-02T22:14:58.000Z"
+            }
+        ]
+    }
 }
 ```
 

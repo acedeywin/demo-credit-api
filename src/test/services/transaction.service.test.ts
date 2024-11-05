@@ -43,8 +43,22 @@ describe('TransactionService', () => {
         balance: 1000,
     }
     const mockTransactions = [
-        { id: 't1', amount: 50, transaction_type: PaymentType.CREDIT, account_id: '2', balance_after: 1100, reference_id: 'STV-2345646786' },
-        { id: 't2', amount: 30, transaction_type: PaymentType.DEBIT, account_id: '2', balance_after: 1100, reference_id: 'STV-2345646786' },
+        {
+            id: 't1',
+            amount: 50,
+            transaction_type: PaymentType.CREDIT,
+            account_id: '2',
+            balance_after: 1100,
+            reference_id: 'STV-2345646786',
+        },
+        {
+            id: 't2',
+            amount: 30,
+            transaction_type: PaymentType.DEBIT,
+            account_id: '2',
+            balance_after: 1100,
+            reference_id: 'STV-2345646786',
+        },
     ]
 
     let mockAccountServiceInstance: jest.Mocked<AccountService>

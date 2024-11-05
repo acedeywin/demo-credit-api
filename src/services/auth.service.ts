@@ -14,7 +14,7 @@ import CacheService from './cache.service'
 class AuthService {
     /**
      * Generates a JWT token for a specified user ID.
-     * 
+     *
      * @param {string} userId - The unique user ID.
      * @returns {Promise<string>} - The generated JWT token.
      */
@@ -26,7 +26,7 @@ class AuthService {
 
     /**
      * Verifies a given JWT token.
-     * 
+     *
      * @param {string} token - The JWT token to verify.
      * @returns {Promise<unknown>} - The decoded token payload.
      */
@@ -36,7 +36,7 @@ class AuthService {
 
     /**
      * Logs in a user by retrieving user details based on email and omitting the password from the returned data.
-     * 
+     *
      * @param {string} email - The user's email address.
      * @returns {Promise<{ user: Partial<UserDto> }>} - An object containing user details without the password.
      * @throws {InternalError} - If the login operation fails.
@@ -55,7 +55,7 @@ class AuthService {
 
     /**
      * Sends a password reset verification email to the specified user's email address.
-     * 
+     *
      * @param {string} email - The email address of the user requesting a password reset.
      * @returns {Promise<void | null>} - Resolves if the operation is successful, or null if the user does not exist.
      * @throws {InternalError} - If the password reset operation fails.
@@ -81,13 +81,16 @@ class AuthService {
 
     /**
      * Changes the password for a user by updating the hashed password in the database.
-     * 
+     *
      * @param {string} email - The email address of the user changing the password.
      * @param {string} password - The new password to be set for the user.
      * @returns {Promise<void>}
      * @throws {InternalError} - If the change password operation fails.
      */
-    static async changePassword(email: string, password: string): Promise<void> {
+    static async changePassword(
+        email: string,
+        password: string
+    ): Promise<void> {
         try {
             const user = await UserModel.getUserByIdentifier({ email })
             const hashedPassword = await EncryptionService.hash(password)

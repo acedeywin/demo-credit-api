@@ -1,3 +1,4 @@
+import { Knex } from 'knex'
 import db from '../config/db/connection'
 import { UserDto } from '../types/user.types'
 
@@ -7,17 +8,27 @@ import { UserDto } from '../types/user.types'
 class UserModel {
     /**
      * Creates a new user with the specified details.
-     * 
+     *
      * @param {UserDto} payload - The user details to be inserted into the database.
      * @returns {Promise<void>}
      */
-    public static async createUser(payload: UserDto): Promise<void> {
-        await db('users').insert(payload)
+    public static async createUser(
+        payload: UserDto,
+        trx: Knex.Transaction
+    ): Promise<UserDto> {
+        await trx('users').insert(payload)
+
+        const user = await trx('users')
+            .where({ email: payload.email })
+            .select('*')
+            .first()
+
+        return user
     }
 
     /**
      * Retrieves a user by a unique identifier, which could be an email, ID, or phone number.
-     * 
+     *
      * @param {Object} identifier - An object containing one or more of the unique identifiers: `email`, `id`, or `phone_number`.
      * @param {string} [identifier.email] - The email of the user.
      * @param {string} [identifier.id] - The unique ID of the user.
@@ -45,7 +56,7 @@ class UserModel {
 
     /**
      * Updates a user by ID with the specified fields.
-     * 
+     *
      * @param {string} id - The unique ID of the user to update.
      * @param {Partial<UserDto>} payload - The fields to update in the user record.
      * @returns {Promise<UserDto | null>} - The updated user details or null if the update failed.

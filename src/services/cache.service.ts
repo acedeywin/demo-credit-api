@@ -8,7 +8,7 @@ const CACHE_EXPIRY = 3600 // 1 hour
 class CacheService {
     /**
      * Sets a cache entry with the specified key and data, expiring after a defined time.
-     * 
+     *
      * @param {string} key - The unique key to identify the cached data.
      * @param {string} data - The data to be cached as a string.
      * @returns {Promise<void>}
@@ -19,7 +19,7 @@ class CacheService {
 
     /**
      * Retrieves cached data by key.
-     * 
+     *
      * @param {string} key - The unique key for the cached data.
      * @returns {Promise<string | null>} - The cached data as a string, or null if not found.
      */
@@ -30,7 +30,7 @@ class CacheService {
 
     /**
      * Invalidates (deletes) cached data by key.
-     * 
+     *
      * @param {string} key - The unique key for the cached data to be invalidated.
      * @returns {Promise<void>}
      */

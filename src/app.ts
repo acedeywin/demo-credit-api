@@ -7,7 +7,7 @@ const app = express()
 app.use(express.json())
 
 // Middleware to set timeout for all requests
-app.use(timeout('10s')) // Set timeout to 10 seconds
+app.use(timeout('16s')) // Set timeout to 16 seconds
 
 // Middleware to handle timed-out requests
 app.use((req: Request, res: Response, next: NextFunction) => {
