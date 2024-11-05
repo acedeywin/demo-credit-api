@@ -177,6 +177,7 @@ export const handleTransferTransactionValidationErrors = async (
 
         const sender = await AccountModel.getAccountDetils(sender_account)
         const receiver = await AccountModel.getAccountDetils(receiver_account)
+        const balance = sender?.balance
 
         if (!sender) {
             res.status(403).json({
@@ -202,6 +203,24 @@ export const handleTransferTransactionValidationErrors = async (
             })
             return
         }
+
+        if (Number(amount) > Number(balance)) {
+
+            res.status(403).json({
+                status: 'success',
+                message: 'Insufficient funds.',
+            })
+            return
+        }
+
+        if (Number(amount) > Number(balance)) {
+            res.status(403).json({
+                status: 'error', // Indicate an error
+                message: 'Insufficient funds.',
+            });
+            return;
+        }
+        
 
         if (!receiver) {
             res.status(403).json({

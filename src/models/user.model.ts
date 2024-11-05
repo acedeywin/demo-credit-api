@@ -1,3 +1,4 @@
+import { Knex } from 'knex'
 import db from '../config/db/connection'
 import { UserDto } from '../types/user.types'
 
@@ -11,8 +12,18 @@ class UserModel {
      * @param {UserDto} payload - The user details to be inserted into the database.
      * @returns {Promise<void>}
      */
-    public static async createUser(payload: UserDto): Promise<void> {
-        await db('users').insert(payload)
+    public static async createUser(
+        payload: UserDto,
+        trx: Knex.Transaction
+    ): Promise<UserDto> {
+        await trx('users').insert(payload)
+
+        const user = await trx('users')
+            .where({ email: payload.email })
+            .select('*')
+            .first()
+
+        return user
     }
 
     /**

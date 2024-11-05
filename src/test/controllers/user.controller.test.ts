@@ -34,6 +34,7 @@ describe('UserController', () => {
                 email: 'john@example.com',
                 confirm_password: 'password',
                 nin: '123456789',
+                initial_deposit: '4500'
             },
             query: { user_id: '1', account_id: '2' },
         }
@@ -50,33 +51,44 @@ describe('UserController', () => {
 
     describe('createUser', () => {
         it('should create a user and return success message', async () => {
-            ;(omitValue as jest.Mock).mockReturnValue({
+            const mockResponse = {
+                user: {
+                    email: 'john@example.com'
+                },
+                account: {
+                    balance: 4500
+                }
+            };
+
+            (omitValue as jest.Mock).mockReturnValue({
                 name: 'John Doe',
                 email: 'john@example.com',
-            })
-            ;(UserService.createUser as jest.Mock).mockResolvedValue(true)
+            });
+            (UserService.createUser as jest.Mock).mockResolvedValue(mockResponse);
 
             await UserController.createUser(
                 req as Request,
                 res as Response,
                 next
-            )
+            );
 
             expect(omitValue).toHaveBeenCalledWith(req.body, [
                 'confirm_password',
                 'nin',
-            ])
+                'initial_deposit'
+            ]);
             expect(UserService.createUser).toHaveBeenCalledWith({
                 name: 'John Doe',
                 email: 'john@example.com',
-            })
-            expect(res.status).toHaveBeenCalledWith(201)
+            }, req.body.initial_deposit);
+            expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith({
                 status: 'success',
                 message:
                     'Account successfully created. Verification code sent to john@example.com',
-            })
-        })
+                data: mockResponse
+            });
+        });
 
         it('should call next with an error if creation fails', async () => {
             const error = new Error('Creation failed')
