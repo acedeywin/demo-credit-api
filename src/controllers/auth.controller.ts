@@ -27,6 +27,7 @@ class AuthController {
                 token,
                 data: user,
             })
+            return
         } catch (error) {
             next(error)
         }
@@ -44,6 +45,7 @@ class AuthController {
             status: 'success',
             message: 'Logged out successfully.',
         })
+        return
     }
 
     /**
