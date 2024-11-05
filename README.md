@@ -126,7 +126,7 @@ The project follows a modular MVC structure. The main components are:
         "phone_number": "08543409211",
         "dob": "12-09-1997",
         "nin": "36900362314",
-        "initial_deposit": "4500", //optional     
+        "initial_deposit": "4500" //optional
     }
     ```
 -   **Response**:

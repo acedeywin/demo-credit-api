@@ -50,7 +50,7 @@ export const validateUserRegistration = [
         .notEmpty()
         .isLength({ min: 11, max: 11 })
         .withMessage('NIN should have 11 characters.'),
-        body('initial_deposit')
+    body('initial_deposit')
         .isNumeric()
         .optional()
         .withMessage('Deposit must be a number.'),
@@ -76,8 +76,15 @@ export const handleUserRegistrationValidationErrors = async (
             return
         }
 
-        const { dob, nin, first_name, last_name, phone_number, email, initial_deposit } =
-            req.body
+        const {
+            dob,
+            nin,
+            first_name,
+            last_name,
+            phone_number,
+            email,
+            initial_deposit,
+        } = req.body
 
         const isLegalAge = await verifyAge(dob)
         const validUser = await AdjutorService.verifyNIN(nin)
@@ -89,12 +96,12 @@ export const handleUserRegistrationValidationErrors = async (
         })
         const phoneExist = await UserModel.getUserByIdentifier({ phone_number })
 
-        if(initial_deposit && Number(initial_deposit) <= 0){
+        if (initial_deposit && Number(initial_deposit) <= 0) {
             res.status(403).json({
                 status: 'success',
                 message: 'Deposit must be greater than zero.',
             })
-            return 
+            return
         }
 
         if (phoneExist?.phone_number === phone_number) {

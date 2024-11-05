@@ -37,30 +37,33 @@ class UserService {
         initial_deposit?: number
     ): Promise<Partial<UserAccountResponse>> {
         try {
-            const account_number = await generateUniqueAccountNumber();
+            const account_number = await generateUniqueAccountNumber()
 
             const account = await db.transaction(async (trx) => {
-                user.nin_verified = VerificationStatus.VERIFIED;
-                const password = await EncryptionService.hash(user.password);
-                user.password = password;
+                user.nin_verified = VerificationStatus.VERIFIED
+                const password = await EncryptionService.hash(user.password)
+                user.password = password
 
-                const created_user = await UserModel.createUser(user, trx);
+                const created_user = await UserModel.createUser(user, trx)
 
                 const account: AccountDto = {
                     account_number,
                     user_id: created_user?.id,
-                    balance: Number(initial_deposit) || 0.00
-                };
+                    balance: Number(initial_deposit) || 0.0,
+                }
 
-                const subject = 'Verification Code';
+                const subject = 'Verification Code'
 
-                const created_account = await AccountService.createAccount(account, trx);
+                const created_account = await AccountService.createAccount(
+                    account,
+                    trx
+                )
                 if (created_account?.account_number) {
                     await this.sendVerificationEmail(
                         user.email,
                         user.first_name,
                         subject
-                    );
+                    )
                 }
 
                 return {
@@ -76,13 +79,15 @@ class UserService {
                         account_number: created_account.account_number,
                         balance: created_account.balance,
                     },
-                } as Partial<UserAccountResponse>;
-            });
+                } as Partial<UserAccountResponse>
+            })
 
-            return account;
+            return account
         } catch (error) {
-            console.error('Error creating user account:', error);
-            throw new InternalError('User account creation could not be completed');
+            console.error('Error creating user account:', error)
+            throw new InternalError(
+                'User account creation could not be completed'
+            )
         }
     }
 
@@ -101,14 +106,14 @@ class UserService {
         subject: string
     ): Promise<void> {
         try {
-            const code = await generateOtp();
-            const text = `Hi ${first_name},\n\n Your ${subject.toLowerCase()} is: ${code}.\n\n Do not share your code with anyone.`;
+            const code = await generateOtp()
+            const text = `Hi ${first_name},\n\n Your ${subject.toLowerCase()} is: ${code}.\n\n Do not share your code with anyone.`
 
-            await CacheService.setCache(email, code);
-            await sendEmail(email, subject, text);
+            await CacheService.setCache(email, code)
+            await sendEmail(email, subject, text)
         } catch (error) {
-            console.error('Error sending email:', error);
-            throw new InternalError('Email could not be sent.');
+            console.error('Error sending email:', error)
+            throw new InternalError('Email could not be sent.')
         }
     }
 
@@ -123,17 +128,17 @@ class UserService {
         id: string
     ): Promise<{ user: Partial<UserDto>; account: AccountDto[] | null }> {
         try {
-            const user = await UserModel.getUserByIdentifier({ id });
+            const user = await UserModel.getUserByIdentifier({ id })
             const account = await AccountModel.getAccountByUserId(
                 user?.id as string
-            );
+            )
 
-            const userData = omitValue(user as UserDto, ['password']);
+            const userData = omitValue(user as UserDto, ['password'])
 
-            return { user: userData, account };
+            return { user: userData, account }
         } catch (error) {
-            console.error('Error fetching user account:', error);
-            throw new InternalError('User account could not be fetched');
+            console.error('Error fetching user account:', error)
+            throw new InternalError('User account could not be fetched')
         }
     }
 
@@ -147,22 +152,22 @@ class UserService {
      */
     static async verifyUser(email: string): Promise<void> {
         try {
-            const user = await UserModel.getUserByIdentifier({ email });
+            const user = await UserModel.getUserByIdentifier({ email })
 
             await UserModel.updateUserById(user?.id as string, {
                 email_verified: true,
-            });
+            })
             await AccountModel.updateAccountByIdOrUserId(
                 { user_id: user?.id },
                 { status: AccountStatus.ACTIVE }
-            );
+            )
 
-            await CacheService.invalidateCache(email);
+            await CacheService.invalidateCache(email)
         } catch (error) {
-            console.error('Error verifying user account:', error);
-            throw new InternalError('User account could not be verified');
+            console.error('Error verifying user account:', error)
+            throw new InternalError('User account could not be verified')
         }
     }
 }
 
-export default UserService;
+export default UserService

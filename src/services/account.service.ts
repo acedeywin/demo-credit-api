@@ -13,7 +13,7 @@ import {
 import db from '../config/db/connection'
 
 /**
- * AccountService provides business logic for managing user accounts, 
+ * AccountService provides business logic for managing user accounts,
  * such as account creation, balance retrieval, and sending transaction notifications.
  */
 class AccountService {
@@ -36,7 +36,10 @@ class AccountService {
      * @returns {Promise<AccountDto>} - The created account data.
      * @throws {InternalError} - Thrown if account creation fails.
      */
-    static async createAccount(payload: AccountDto, trx: Knex.Transaction): Promise<AccountDto> {
+    static async createAccount(
+        payload: AccountDto,
+        trx: Knex.Transaction
+    ): Promise<AccountDto> {
         try {
             return await AccountModel.createAccount(payload, trx)
         } catch (error) {
@@ -46,7 +49,7 @@ class AccountService {
     }
 
     /**
-     * Generates a new account for a user, assigns a unique account number, 
+     * Generates a new account for a user, assigns a unique account number,
      * and sends a notification email.
      *
      * @param {string} id - The user ID for whom the account is created.
@@ -79,7 +82,9 @@ class AccountService {
             return created_account
         } catch (error) {
             console.error('New account creation failed:', error)
-            throw new InternalError('New account creation could not be completed.')
+            throw new InternalError(
+                'New account creation could not be completed.'
+            )
         }
     }
 
@@ -101,7 +106,11 @@ class AccountService {
      * @param {PaymentType} type - Specifies if the transaction is a CREDIT or DEBIT.
      * @param {Knex.Transaction} trx - Transaction context for the operation.
      */
-    async updateBalance(amount: number, type: PaymentType, trx: Knex.Transaction): Promise<void> {
+    async updateBalance(
+        amount: number,
+        type: PaymentType,
+        trx: Knex.Transaction
+    ): Promise<void> {
         await AccountModel.updateBalance(this.account_number, amount, type, trx)
     }
 
@@ -133,7 +142,9 @@ class AccountService {
     ): Promise<void> {
         try {
             const account = await this.accountDetails()
-            const user = await UserModel.getUserByIdentifier({ id: account?.user_id })
+            const user = await UserModel.getUserByIdentifier({
+                id: account?.user_id,
+            })
 
             const transaction_type = type.toLocaleUpperCase()
             const account_number = maskNumber(String(account?.account_number))
@@ -148,7 +159,9 @@ class AccountService {
             await sendEmail(user?.email as string, subject, text)
         } catch (error) {
             console.error('Notification sending failed:', error)
-            throw new InternalError('Notification sending could not be completed.')
+            throw new InternalError(
+                'Notification sending could not be completed.'
+            )
         }
     }
 }
