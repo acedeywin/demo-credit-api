@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-/** This is neede to unr the migrations
+/** This is needed to run the migrations
  * since knexfile is not on the same directory level with the .env file
  * Reference: https://stackoverflow.com/questions/49905967/knexfile-not-reading-environment-variables
  */
