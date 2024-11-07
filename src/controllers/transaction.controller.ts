@@ -101,10 +101,12 @@ class TransactionController {
         next: NextFunction
     ) {
         try {
-            const { account_number } = req.query
+            const { account_number, page, size } = req.query
 
             const transactions = await TransactionService.transactionHistory(
-                account_number as string
+                account_number as string,
+                Number(page),
+                Number(size)
             )
             res.status(201).json({
                 status: 'success',

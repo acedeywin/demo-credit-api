@@ -2,6 +2,7 @@ import { body, query, validationResult } from 'express-validator'
 import { Request, Response, NextFunction } from 'express'
 import AccountModel from '../models/account.model'
 import { AccountStatus } from '../types/account.types'
+import { BadRequestError } from '../utils/error.handler'
 
 /**
  * Validation middleware for transactions, ensuring valid account number, amount, and optional description.
@@ -243,6 +244,20 @@ export const validateTransactionHistory = [
         .isLength({ min: 10, max: 10 })
         .notEmpty()
         .withMessage('account_number query is required.'),
+        query('page')
+        .isNumeric()
+        .notEmpty()
+        .withMessage('page query is required.'),
+        query('size')
+        .isNumeric()
+        .optional()
+        .withMessage('Size must be a numeric value.')
+        .custom((value) => {
+            if (value < 10) {
+                throw new BadRequestError('Size must not be at least 10.');
+            }
+            return true;
+        }),
 ]
 
 /**

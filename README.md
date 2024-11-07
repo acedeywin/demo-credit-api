@@ -407,7 +407,7 @@ The project follows a modular MVC structure. The main components are:
 ### Transaction History
 
 -   **Method**: GET
--   **Endpoint**: `/api/v1/transaction/history?user_id=209cf65bxxxx&account_number=2780799928`
+-   **Endpoint**: `/api/v1/transaction/history?user_id=209cf65bxxxx&account_number=2780799921&page=1&size=10`
 -   **Authorization**: Bearer `<token>`
 
 -   **Response**:
@@ -426,19 +426,20 @@ The project follows a modular MVC structure. The main components are:
             "created_at": "2024-11-04T08:03:13.000Z",
             "updated_at": "2024-11-04T08:03:13.000Z"
         },
-        "transactions": [
-            {
-                "id": "5e02251c-xxxxx9",
-                "account_id": "3d7ca163-xxxxx",
-                "amount": "45000.00",
-                "balance_after": "45000.00",
-                "transaction_type": "credit",
-                "description": "Loan funding",
-                "reference_id": "SOC-6699410844",
-                "created_at": "2024-11-04T08:04:08.000Z",
-                "updated_at": "2024-11-04T08:04:08.000Z"
-            },
-            {
+        "transactions": {
+            "transactions": [
+                {
+                    "id": "df3d4bb8-9bfd-xxxxxxx",
+                    "account_id": "052c8878-9xxxxx",
+                    "amount": "21500.00",
+                    "balance_after": "43500.00",
+                    "transaction_type": "credit",
+                    "description": "Loan funding",
+                    "reference_id": "SOC-3959629329",
+                    "created_at": "2024-11-06T04:13:34.000Z",
+                    "updated_at": "2024-11-06T04:13:34.000Z"
+                },
+                 {
                 "id": "7ed22f13-9a83-xxxx",
                 "account_id": "3d7ca163-9xxxx",
                 "amount": "17000.00",
@@ -449,7 +450,11 @@ The project follows a modular MVC structure. The main components are:
                 "created_at": "2024-11-04T08:05:03.000Z",
                 "updated_at": "2024-11-04T08:05:03.000Z"
             }
-        ]
+            ],
+            "totalPages": 6,
+            "currentPage": 1,
+            "page": 1
+        }
     }
 }
 ```

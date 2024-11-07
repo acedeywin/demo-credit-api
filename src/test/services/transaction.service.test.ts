@@ -36,13 +36,15 @@ afterAll(async () => {
 describe('TransactionService', () => {
     const account_number = '1234567890'
     const amount = 100
+    const page = 1
+    const size = 10
     const description = 'Test transaction'
     const mockAccountDetails = {
         id: '1',
         user_id: 'user1',
         balance: 1000,
     }
-    const mockTransactions = [
+    const transactions = [
         {
             id: 't1',
             amount: 50,
@@ -60,6 +62,13 @@ describe('TransactionService', () => {
             reference_id: 'STV-2345646786',
         },
     ]
+
+   const mockTransactions = {
+            transactions,
+            totalPages: 6,
+            currentPage: 1,
+            page: 1
+        }
 
     let mockAccountServiceInstance: jest.Mocked<AccountService>
 
@@ -231,13 +240,13 @@ describe('TransactionService', () => {
     describe('transactionHistory', () => {
         it('should return account details and transaction history', async () => {
             const result =
-                await TransactionService.transactionHistory(account_number)
+                await TransactionService.transactionHistory(account_number, page, size)
 
             // Assertions for account and transaction results
             expect(mockAccountServiceInstance.accountDetails).toHaveBeenCalled()
             expect(
                 TransactionModel.getAccountTransactions
-            ).toHaveBeenCalledWith(mockAccountDetails.id)
+            ).toHaveBeenCalledWith(mockAccountDetails.id, page, size)
             expect(result.account).toEqual(mockAccountDetails)
             expect(result.transactions).toEqual(mockTransactions)
         })
@@ -248,7 +257,7 @@ describe('TransactionService', () => {
             )
 
             await expect(
-                TransactionService.transactionHistory(account_number)
+                TransactionService.transactionHistory(account_number, page, size)
             ).rejects.toThrow(InternalError)
         })
     })

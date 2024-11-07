@@ -1,7 +1,7 @@
 import db from '../config/db/connection'
 import TransactionModel from '../models/transaction.model'
 import { AccountDto, PaymentType } from '../types/account.types'
-import { TransactionDto } from '../types/transaction.types'
+import { TransactionDto, TransactionReturnType } from '../types/transaction.types'
 import { InternalError } from '../utils/error.handler'
 import { generateReferenceId } from '../utils/helpers'
 import AccountService from './account.service'
@@ -158,16 +158,19 @@ class TransactionService {
      * @returns {Promise<{ account: AccountDto | null; transactions: TransactionDto[] | null }>} - An object containing account details and transaction history.
      * @throws {InternalError} - If fetching transactions fails.
      */
-    static async transactionHistory(account_number: string): Promise<{
+    static async transactionHistory(account_number: string, page: number,
+        size?: number): Promise<{
         account: AccountDto | null
-        transactions: TransactionDto[] | null
+        transactions: TransactionReturnType | null
     }> {
         try {
             const account = new AccountService(account_number)
             const details = await account.accountDetails()
 
             const transactions = await TransactionModel.getAccountTransactions(
-                details?.id as string
+                details?.id as string,
+                page,
+                size
             )
 
             return { account: details, transactions }

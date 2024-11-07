@@ -150,7 +150,7 @@ describe('TransactionController', () => {
 
     describe('transactionHistory', () => {
         it('should fetch transaction history successfully', async () => {
-            req.query = { account_number: '1234567890' }
+            req.query = { account_number: '1234567890', page: '1', size: '10' }
             const mockTransactions = {
                 account: { id: '123', balance: 1000 },
                 transactions: [
@@ -165,6 +165,9 @@ describe('TransactionController', () => {
                         transaction_type: PaymentType.DEBIT,
                     },
                 ],
+                totalPages: 6,
+                currentPage: 1,
+                page: 1
             }
             ;(
                 TransactionService.transactionHistory as jest.Mock
@@ -177,7 +180,9 @@ describe('TransactionController', () => {
             )
 
             expect(TransactionService.transactionHistory).toHaveBeenCalledWith(
-                '1234567890'
+                '1234567890',
+                1,
+                10
             )
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith({

@@ -8,3 +8,10 @@ export interface TransactionDto {
     description?: string
     reference_id: string
 }
+
+export interface TransactionReturnType {
+    transactions: TransactionDto[]
+    totalPages: number
+    currentPage: number
+    page: number
+}
